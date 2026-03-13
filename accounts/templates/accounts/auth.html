@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>HabitFlow — {% if mode == 'login' %}Sign In{% elif mode == 'signup' %}Create Account{% elif mode == 'forgot' %}Forgot Password{% elif mode == 'reset' %}Reset Password{% else %}HabitFlow{% endif %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#080810;--bg2:#0d0d18;--surface:#111120;--surface2:#181828;--surface3:#1e1e32;--border:#252538;--border2:#2e2e48;--text:#f0f0fa;--text2:#a0a0c0;--muted:#555570;--lime:#c8ff00;--lime-glow:rgba(200,255,0,.18);--r:14px;--red:#f87171;--green:#34d399}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100vh;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden}
+/* animated bg */
+#bgCanvas{position:fixed;inset:0;z-index:0;opacity:.3;pointer-events:none}
+.page-wrap{position:relative;z-index:1;min-height:100vh;display:grid;grid-template-columns:1fr 1fr;gap:0}
+/* Left panel */
+.left-panel{background:linear-gradient(135deg,var(--surface) 0%,var(--bg2) 100%);border-right:1px solid var(--border);display:flex;flex-direction:column;justify-content:space-between;padding:48px 52px;position:relative;overflow:hidden}
+.left-panel::before{content:'';position:absolute;top:-120px;right:-120px;width:400px;height:400px;background:radial-gradient(circle,rgba(200,255,0,.08) 0%,transparent 65%);pointer-events:none}
+.left-panel::after{content:'';position:absolute;bottom:-80px;left:-80px;width:300px;height:300px;background:radial-gradient(circle,rgba(200,255,0,.05) 0%,transparent 65%);pointer-events:none}
+.brand{display:flex;align-items:center;gap:12px}
+.brand-icon{width:40px;height:40px;background:var(--lime);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.brand-name{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;letter-spacing:-.5px}
+.brand-name span{color:var(--lime)}
+.hero-text{flex:1;display:flex;flex-direction:column;justify-content:center;padding:40px 0}
+.hero-text h1{font-family:'Syne',sans-serif;font-size:42px;font-weight:800;letter-spacing:-2px;line-height:1.1;margin-bottom:16px}
+.hero-text h1 em{color:var(--lime);font-style:normal}
+.hero-text p{color:var(--text2);font-size:16px;line-height:1.7;max-width:380px}
+.features-list{display:flex;flex-direction:column;gap:14px;margin-top:36px}
+.feat{display:flex;align-items:flex-start;gap:12px}
+.feat-dot{width:28px;height:28px;border-radius:8px;background:rgba(200,255,0,.1);border:1px solid rgba(200,255,0,.2);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;margin-top:1px}
+.feat-text{font-size:14px;color:var(--text2);line-height:1.5}
+.feat-text strong{color:var(--text);font-weight:600}
+.left-footer{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.5px}
+/* Right panel */
+.right-panel{display:flex;align-items:center;justify-content:center;padding:48px 52px;background:var(--bg)}
+.auth-card{width:100%;max-width:420px}
+.auth-card-header{margin-bottom:32px}
+.auth-card-header h2{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;letter-spacing:-1px;margin-bottom:6px}
+.auth-card-header p{color:var(--text2);font-size:14px;line-height:1.5}
+.auth-card-header p a{color:var(--lime);text-decoration:none;font-weight:600}
+.auth-card-header p a:hover{text-decoration:underline}
+/* Google button */
+.btn-google{width:100%;padding:13px 16px;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:all .2s;margin-bottom:24px}
+.btn-google:hover{border-color:rgba(200,255,0,.4);background:var(--surface2);transform:translateY(-1px)}
+.btn-google svg{flex-shrink:0}
+.divider{display:flex;align-items:center;gap:14px;margin-bottom:24px}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.divider span{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+/* Form */
+.fgroup{margin-bottom:16px;position:relative}
+.fgroup label{display:block;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px}
+.fgroup input{width:100%;background:var(--surface);border:1.5px solid var(--border2);color:var(--text);border-radius:var(--r);padding:13px 16px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color .2s,box-shadow .2s}
+.fgroup input:focus{border-color:var(--lime);box-shadow:0 0 0 3px rgba(200,255,0,.08)}
+.fgroup input.error{border-color:var(--red)}
+.fgroup .pwd-toggle{position:absolute;right:14px;bottom:13px;cursor:pointer;color:var(--muted);font-size:14px;user-select:none;transition:color .15s}
+.fgroup .pwd-toggle:hover{color:var(--text)}
+.field-error{font-size:11px;color:var(--red);margin-top:5px;font-family:'DM Mono',monospace;display:none}
+.forgot-link{display:block;text-align:right;font-size:12px;color:var(--muted);text-decoration:none;margin-top:-8px;margin-bottom:20px;font-family:'DM Mono',monospace;transition:color .15s}
+.forgot-link:hover{color:var(--lime)}
+/* Password strength */
+.pwd-strength{margin-top:6px;display:none}
+.pwd-strength-bar{height:3px;border-radius:99px;background:var(--surface3);overflow:hidden}
+.pwd-strength-fill{height:100%;border-radius:99px;transition:width .3s,background .3s}
+.pwd-strength-label{font-family:'DM Mono',monospace;font-size:10px;margin-top:4px}
+/* Submit button */
+.btn-submit{width:100%;padding:14px;background:var(--lime);border:none;border-radius:var(--r);font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--bg);cursor:pointer;transition:all .2s;letter-spacing:.3px;margin-top:4px;position:relative;overflow:hidden}
+.btn-submit:hover:not(:disabled){background:#d4ff1a;box-shadow:0 4px 24px var(--lime-glow);transform:translateY(-1px)}
+.btn-submit:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-submit .spinner{display:none;width:18px;height:18px;border:2.5px solid rgba(0,0,0,.3);border-top-color:#000;border-radius:50%;animation:spin .7s linear infinite;margin:0 auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+.btn-submit.loading .btn-text{display:none}
+.btn-submit.loading .spinner{display:block}
+/* Alert boxes */
+.alert{border-radius:var(--r);padding:14px 16px;font-size:13px;line-height:1.5;margin-bottom:18px;display:none;align-items:flex-start;gap:10px}
+.alert.show{display:flex}
+.alert-error{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.25);color:#fca5a5}
+.alert-success{background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.25);color:#6ee7b7}
+.alert-info{background:rgba(200,255,0,.08);border:1px solid rgba(200,255,0,.2);color:var(--lime)}
+.alert-icon{flex-shrink:0;font-size:16px}
+/* Terms */
+.terms-note{font-size:11px;color:var(--muted);text-align:center;margin-top:16px;line-height:1.6;font-family:'DM Mono',monospace}
+.terms-note a{color:var(--text2);text-decoration:underline}
+/* Success state */
+.success-state{text-align:center;padding:20px 0}
+.success-emoji{font-size:60px;margin-bottom:16px}
+.success-state h3{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;margin-bottom:8px}
+.success-state p{color:var(--text2);font-size:14px;line-height:1.6;max-width:320px;margin:0 auto 24px}
+.btn-secondary{display:inline-block;padding:11px 24px;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);color:var(--text2);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;transition:all .2s}
+.btn-secondary:hover{border-color:var(--lime);color:var(--lime)}
+/* Responsive */
+@media(max-width:800px){.page-wrap{grid-template-columns:1fr}.left-panel{display:none}.right-panel{padding:32px 24px;align-items:flex-start;padding-top:48px}}
+</style>
+</head>
+<body>
+<canvas id="bgCanvas"></canvas>
+<div class="page-wrap">
+  <!-- Left decorative panel -->
+  <div class="left-panel">
+    <div class="brand">
+      <div class="brand-icon">
+        <svg width="24" height="24" viewBox="0 0 36 36" fill="none">
+          <rect x="5" y="7" width="3.5" height="22" rx="1.5" fill="#080810"/>
+          <rect x="5" y="15.5" width="13" height="3.5" rx="1.5" fill="#080810"/>
+          <rect x="14.5" y="7" width="3.5" height="11" rx="1.5" fill="#080810"/>
+          <path d="M20 21L23.5 25L31 14" stroke="#080810" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="brand-name">Habit<span>Flow</span></div>
+    </div>
+    <div class="hero-text">
+      <h1>Build habits.<br/>Track progress.<br/><em>Stay consistent.</em></h1>
+      <p>Your personal habit tracker with streaks, heatmaps, analytics, and a badge system to keep you motivated.</p>
+      <div class="features-list">
+        <div class="feat"><div class="feat-dot">🔥</div><div class="feat-text"><strong>Streak tracking</strong> — see your longest consecutive runs</div></div>
+        <div class="feat"><div class="feat-dot">🎯</div><div class="feat-text"><strong>Day targets</strong> — set a 30 or 60-day goal for any habit</div></div>
+        <div class="feat"><div class="feat-dot">🏆</div><div class="feat-text"><strong>13 badges</strong> — unlock achievements as you build discipline</div></div>
+        <div class="feat"><div class="feat-dot">▦</div><div class="feat-text"><strong>Heatmap & matrix</strong> — visualise your entire year at a glance</div></div>
+      </div>
+    </div>
+    <div class="left-footer">© 2026 HABITFLOW · TRACK EVERYTHING</div>
+  </div>
+
+  <!-- Right auth panel -->
+  <div class="right-panel">
+    <div class="auth-card">
+
+      {% if mode == 'login' %}
+      <div class="auth-card-header">
+        <h2>Welcome back</h2>
+        <p>Don't have an account? <a href="/auth/signup/">Create one free</a></p>
+      </div>
+      <div class="alert alert-error" id="loginError"><span class="alert-icon">⚠</span><span id="loginErrorMsg"></span></div>
+      <button class="btn-google" onclick="googleLogin()">
+        <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.08 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-3.59-13.46-8.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+        Continue with Google
+      </button>
+      <div class="divider"><span>or sign in with email</span></div>
+      <div class="fgroup">
+        <label>Email Address</label>
+        <input type="email" id="loginEmail" placeholder="you@example.com" autocomplete="email"/>
+      </div>
+      <div class="fgroup">
+        <label>Password</label>
+        <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password"/>
+        <span class="pwd-toggle" onclick="togglePwd('loginPassword',this)">👁</span>
+      </div>
+      <a href="/auth/forgot-password/" class="forgot-link">Forgot password?</a>
+      <button class="btn-submit" id="loginBtn" onclick="submitLogin()">
+        <span class="btn-text">Sign In</span>
+        <div class="spinner"></div>
+      </button>
+      {% if request.GET.error == 'google_failed' or request.GET.error == 'google_cancelled' %}
+      <script>document.addEventListener('DOMContentLoaded',()=>showAlert('loginError','Google sign-in was cancelled or failed. Try again.'));</script>
+      {% endif %}
+
+      {% elif mode == 'signup' %}
+      <div class="auth-card-header">
+        <h2>Create account</h2>
+        <p>Already have an account? <a href="/auth/login/">Sign in</a></p>
+      </div>
+      <div class="alert alert-error" id="signupError"><span class="alert-icon">⚠</span><span id="signupErrorMsg"></span></div>
+      <div id="signupForm">
+        <button class="btn-google" onclick="googleLogin()">
+          <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.08 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-3.59-13.46-8.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+          Continue with Google
+        </button>
+        <div class="divider"><span>or sign up with email</span></div>
+        <div class="fgroup">
+          <label>Full Name</label>
+          <input type="text" id="signupName" placeholder="Your name" autocomplete="name"/>
+        </div>
+        <div class="fgroup">
+          <label>Email Address</label>
+          <input type="email" id="signupEmail" placeholder="you@example.com" autocomplete="email"/>
+        </div>
+        <div class="fgroup">
+          <label>Password</label>
+          <input type="password" id="signupPassword" placeholder="Min 8 characters" autocomplete="new-password" oninput="checkStrength(this.value)"/>
+          <span class="pwd-toggle" onclick="togglePwd('signupPassword',this)">👁</span>
+          <div class="pwd-strength" id="pwdStrength">
+            <div class="pwd-strength-bar"><div class="pwd-strength-fill" id="pwdFill"></div></div>
+            <div class="pwd-strength-label" id="pwdLabel"></div>
+          </div>
+        </div>
+        <button class="btn-submit" id="signupBtn" onclick="submitSignup()">
+          <span class="btn-text">Create Account</span>
+          <div class="spinner"></div>
+        </button>
+        <div class="terms-note">By signing up you agree to our <a href="#">Terms</a> and <a href="#">Privacy Policy</a>.</div>
+      </div>
+      <div class="success-state" id="signupSuccess" style="display:none">
+        <div class="success-emoji">📬</div>
+        <h3>Check your inbox!</h3>
+        <p>We sent a verification link to <strong id="sentEmail"></strong>. Click the link to activate your account.</p>
+        <button class="btn-secondary" onclick="resendEmail()">Resend Email</button>
+      </div>
+
+      {% elif mode == 'forgot' %}
+      <div class="auth-card-header">
+        <h2>Reset password</h2>
+        <p>Enter your email and we'll send you a reset link. <a href="/auth/login/">Back to login</a></p>
+      </div>
+      <div class="alert alert-error" id="forgotError"><span class="alert-icon">⚠</span><span id="forgotErrorMsg"></span></div>
+      <div id="forgotForm">
+        <div class="fgroup">
+          <label>Email Address</label>
+          <input type="email" id="forgotEmail" placeholder="you@example.com"/>
+        </div>
+        <button class="btn-submit" id="forgotBtn" onclick="submitForgot()">
+          <span class="btn-text">Send Reset Link</span>
+          <div class="spinner"></div>
+        </button>
+      </div>
+      <div class="success-state" id="forgotSuccess" style="display:none">
+        <div class="success-emoji">✉️</div>
+        <h3>Link sent!</h3>
+        <p>If that email exists in our system, you'll receive a password reset link within a minute.</p>
+        <a href="/auth/login/" class="btn-secondary">Back to Login</a>
+      </div>
+
+      {% elif mode == 'reset' %}
+      <div class="auth-card-header">
+        <h2>New password</h2>
+        <p>Enter your new password below.</p>
+      </div>
+      <div class="alert alert-error" id="resetError"><span class="alert-icon">⚠</span><span id="resetErrorMsg"></span></div>
+      <div id="resetForm">
+        <div class="fgroup">
+          <label>New Password</label>
+          <input type="password" id="resetPassword" placeholder="Min 8 characters" oninput="checkStrength(this.value)"/>
+          <span class="pwd-toggle" onclick="togglePwd('resetPassword',this)">👁</span>
+          <div class="pwd-strength" id="pwdStrength">
+            <div class="pwd-strength-bar"><div class="pwd-strength-fill" id="pwdFill"></div></div>
+            <div class="pwd-strength-label" id="pwdLabel"></div>
+          </div>
+        </div>
+        <div class="fgroup">
+          <label>Confirm Password</label>
+          <input type="password" id="resetConfirm" placeholder="Repeat password"/>
+          <span class="pwd-toggle" onclick="togglePwd('resetConfirm',this)">👁</span>
+        </div>
+        <button class="btn-submit" id="resetBtn" onclick="submitReset()">
+          <span class="btn-text">Update Password</span>
+          <div class="spinner"></div>
+        </button>
+      </div>
+      <div class="success-state" id="resetSuccess" style="display:none">
+        <div class="success-emoji">🔓</div>
+        <h3>Password updated!</h3>
+        <p>Your password has been changed successfully.</p>
+        <a href="/auth/login/" class="btn-secondary">Sign In</a>
+      </div>
+
+      {% elif mode == 'verify_expired' %}
+      <div class="success-state" style="display:block">
+        <div class="success-emoji">⏰</div>
+        <h3>Link expired</h3>
+        <p>Your verification link has expired. Click below to get a fresh one.</p>
+        <button class="btn-submit" style="max-width:240px;margin:0 auto" onclick="resendEmailFor('{{ email }}')">Resend Verification</button>
+      </div>
+
+      {% elif mode == 'verify_invalid' %}
+      <div class="success-state" style="display:block">
+        <div class="success-emoji">❌</div>
+        <h3>Invalid link</h3>
+        <p>This verification link is invalid. Try signing up again.</p>
+        <a href="/auth/signup/" class="btn-secondary">Sign Up</a>
+      </div>
+
+      {% elif mode == 'reset_expired' %}
+      <div class="success-state" style="display:block">
+        <div class="success-emoji">⏰</div>
+        <h3>Link expired</h3>
+        <p>This password reset link has expired or already been used.</p>
+        <a href="/auth/forgot-password/" class="btn-secondary">Request New Link</a>
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+
+<script>
+// Background canvas
+(function(){
+  const c=document.getElementById('bgCanvas'),ctx=c.getContext('2d');
+  function resize(){c.width=innerWidth;c.height=innerHeight;}
+  resize();window.addEventListener('resize',resize);
+  const pts=Array.from({length:40},()=>({x:Math.random()*innerWidth,y:Math.random()*innerHeight,vx:(Math.random()-.5)*.2,vy:(Math.random()-.5)*.2,r:Math.random()*1.2+.3}));
+  (function draw(){
+    ctx.clearRect(0,0,c.width,c.height);
+    pts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>c.width)p.vx*=-1;if(p.y<0||p.y>c.height)p.vy*=-1;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle='rgba(200,255,0,.3)';ctx.fill();});
+    for(let i=0;i<pts.length;i++)for(let j=i+1;j<pts.length;j++){const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,d=Math.sqrt(dx*dx+dy*dy);if(d<120){ctx.beginPath();ctx.moveTo(pts[i].x,pts[i].y);ctx.lineTo(pts[j].x,pts[j].y);ctx.strokeStyle=`rgba(200,255,0,${(1-d/120)*.06})`;ctx.stroke();}}
+    requestAnimationFrame(draw);
+  })();
+})();
+
+function googleLogin(){window.location.href='/auth/google/';}
+
+function togglePwd(id,btn){const i=document.getElementById(id);i.type=i.type==='password'?'text':'password';btn.textContent=i.type==='password'?'👁':'🙈';}
+
+function showAlert(id,msg){const el=document.getElementById(id);const msgEl=document.getElementById(id+'Msg');if(msgEl)msgEl.textContent=msg;el.classList.add('show');}
+function hideAlert(id){document.getElementById(id).classList.remove('show');}
+
+function setLoading(btn,on){const b=document.getElementById(btn);b.classList.toggle('loading',on);b.disabled=on;}
+
+function checkStrength(pw){
+  const el=document.getElementById('pwdStrength');
+  const fill=document.getElementById('pwdFill');
+  const lbl=document.getElementById('pwdLabel');
+  if(!el)return;
+  el.style.display=pw?'block':'none';
+  let score=0;
+  if(pw.length>=8)score++;if(pw.length>=12)score++;
+  if(/[A-Z]/.test(pw))score++;if(/[0-9]/.test(pw))score++;if(/[^A-Za-z0-9]/.test(pw))score++;
+  const levels=[{w:'20%',c:'#f87171',t:'Weak'},{ w:'40%',c:'#fb923c',t:'Fair'},{ w:'60%',c:'#fbbf24',t:'Good'},{ w:'80%',c:'#34d399',t:'Strong'},{ w:'100%',c:'#c8ff00',t:'Very strong'}];
+  const l=levels[Math.min(score,4)];
+  fill.style.width=l.w;fill.style.background=l.c;
+  lbl.textContent=l.t;lbl.style.color=l.c;
+}
+
+// Enter key support
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'){
+    if(document.getElementById('loginBtn'))submitLogin();
+    else if(document.getElementById('signupBtn'))submitSignup();
+    else if(document.getElementById('forgotBtn'))submitForgot();
+    else if(document.getElementById('resetBtn'))submitReset();
+  }
+});
+
+// ── Login ──────────────────────────────────────────────────────────────────
+async function submitLogin(){
+  hideAlert('loginError');
+  const email=document.getElementById('loginEmail').value.trim();
+  const password=document.getElementById('loginPassword').value;
+  if(!email||!password){showAlert('loginError','Please fill in all fields.');return;}
+  setLoading('loginBtn',true);
+  try{
+    const r=await fetch('/auth/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});
+    const d=await r.json();
+    if(d.ok){window.location.href=d.redirect||'/';}
+    else{
+      if(d.needs_verify){
+        showAlert('loginError',d.error+' <button onclick="resendEmailFor(\''+email+'\')" style="background:none;border:none;color:var(--lime);cursor:pointer;font-size:12px;text-decoration:underline;padding:0">Resend</button>');
+      }else{showAlert('loginError',d.error);}
+    }
+  }catch{showAlert('loginError','Something went wrong. Try again.');}
+  setLoading('loginBtn',false);
+}
+
+// ── Signup ─────────────────────────────────────────────────────────────────
+let signupEmailUsed='';
+async function submitSignup(){
+  hideAlert('signupError');
+  const name=document.getElementById('signupName').value.trim();
+  const email=document.getElementById('signupEmail').value.trim();
+  const password=document.getElementById('signupPassword').value;
+  if(!email||!password){showAlert('signupError','Email and password are required.');return;}
+  if(password.length<8){showAlert('signupError','Password must be at least 8 characters.');return;}
+  setLoading('signupBtn',true);
+  try{
+    const r=await fetch('/auth/api/signup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password,full_name:name})});
+    const d=await r.json();
+    if(d.ok){
+      signupEmailUsed=email;
+      document.getElementById('signupForm').style.display='none';
+      document.getElementById('sentEmail').textContent=email;
+      document.getElementById('signupSuccess').style.display='block';
+    }else{showAlert('signupError',d.error);}
+  }catch{showAlert('signupError','Something went wrong. Try again.');}
+  setLoading('signupBtn',false);
+}
+
+async function resendEmail(){
+  const email=signupEmailUsed||document.getElementById('signupEmail')?.value;
+  if(!email)return;
+  await resendEmailFor(email);
+}
+async function resendEmailFor(email){
+  const r=await fetch('/auth/api/resend-verification',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});
+  const d=await r.json();
+  if(d.ok)alert('Verification email resent to '+email);
+  else alert(d.error||'Failed to resend.');
+}
+
+// ── Forgot ─────────────────────────────────────────────────────────────────
+async function submitForgot(){
+  hideAlert('forgotError');
+  const email=document.getElementById('forgotEmail').value.trim();
+  if(!email){showAlert('forgotError','Please enter your email.');return;}
+  setLoading('forgotBtn',true);
+  try{
+    const r=await fetch('/auth/api/forgot',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});
+    const d=await r.json();
+    if(d.ok){document.getElementById('forgotForm').style.display='none';document.getElementById('forgotSuccess').style.display='block';}
+    else{showAlert('forgotError',d.error);}
+  }catch{showAlert('forgotError','Something went wrong.');}
+  setLoading('forgotBtn',false);
+}
+
+// ── Reset password ─────────────────────────────────────────────────────────
+async function submitReset(){
+  hideAlert('resetError');
+  const password=document.getElementById('resetPassword').value;
+  const confirm=document.getElementById('resetConfirm').value;
+  if(password!==confirm){showAlert('resetError','Passwords do not match.');return;}
+  if(password.length<8){showAlert('resetError','Password must be at least 8 characters.');return;}
+  const token='{{ reset_token }}';
+  setLoading('resetBtn',true);
+  try{
+    const r=await fetch('/auth/api/reset-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token,password})});
+    const d=await r.json();
+    if(d.ok){document.getElementById('resetForm').style.display='none';document.getElementById('resetSuccess').style.display='block';}
+    else{showAlert('resetError',d.error);}
+  }catch{showAlert('resetError','Something went wrong.');}
+  setLoading('resetBtn',false);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,322 @@
+import json
+from datetime import date, timedelta, datetime
+from functools import wraps
+
+from django.http import JsonResponse
+from django.shortcuts import render, redirect
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
+
+from .models import Habit, HabitLog, Badge, BADGE_DEFINITIONS
+
+
+# ── Auth guard ─────────────────────────────────────────────────────────────
+
+def login_required_api(view_func):
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return JsonResponse({'error': 'Authentication required.', 'redirect': '/auth/login/'}, status=401)
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
+
+def login_required_page(view_func):
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('/auth/login/')
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
+
+# ── Page ───────────────────────────────────────────────────────────────────
+
+@login_required_page
+def index(request):
+    return render(request, 'habits/index.html', {
+        'user': request.user,
+        'show_verified_toast': request.GET.get('verified') == '1',
+    })
+
+
+# ── Badge evaluation ────────────────────────────────────────────────────────
+
+def evaluate_badges(habit, logged_dates):
+    newly_earned = []
+    today = date.today()
+    total = len(logged_dates)
+
+    streak = 0
+    check = today
+    while check in logged_dates:
+        streak += 1
+        check -= timedelta(days=1)
+
+    for badge_id, _, _, _, ctype, threshold in BADGE_DEFINITIONS:
+        if ctype != 'streak':
+            continue
+        if streak >= threshold:
+            b, created = Badge.objects.get_or_create(badge_id=badge_id, habit=habit,
+                                                      defaults={'earned_at': today})
+            if created:
+                newly_earned.append(b.to_dict())
+
+    for badge_id, _, _, _, ctype, threshold in BADGE_DEFINITIONS:
+        if ctype != 'total':
+            continue
+        if total >= threshold:
+            b, created = Badge.objects.get_or_create(badge_id=badge_id, habit=habit,
+                                                      defaults={'earned_at': today})
+            if created:
+                newly_earned.append(b.to_dict())
+
+    if habit.target_days and habit.target_start:
+        target_end = habit.target_start + timedelta(days=habit.target_days - 1)
+        window_logs = {d for d in logged_dates if habit.target_start <= d <= target_end}
+        completed_in_window = len(window_logs)
+
+        if completed_in_window >= habit.target_days:
+            b, created = Badge.objects.get_or_create(
+                badge_id='target_complete', habit=habit,
+                defaults={'earned_at': today, 'extra_data': {'target_days': habit.target_days}}
+            )
+            if created:
+                newly_earned.append(b.to_dict())
+
+            total_window_days = (min(target_end, today) - habit.target_start).days + 1
+            if completed_in_window >= total_window_days:
+                b, created = Badge.objects.get_or_create(
+                    badge_id='target_perfect', habit=habit,
+                    defaults={'earned_at': today}
+                )
+                if created:
+                    newly_earned.append(b.to_dict())
+
+            sorted_logs = sorted(window_logs)
+            if len(sorted_logs) >= habit.target_days:
+                completion_date = sorted_logs[habit.target_days - 1]
+                days_saved = (target_end - completion_date).days
+                if days_saved >= 10:
+                    b, created = Badge.objects.get_or_create(
+                        badge_id='target_early', habit=habit,
+                        defaults={'earned_at': today, 'extra_data': {'days_saved': days_saved}}
+                    )
+                    if created:
+                        newly_earned.append(b.to_dict())
+
+    target_complete_count = Badge.objects.filter(
+        badge_id='target_complete',
+        habit__user=habit.user
+    ).count()
+    if target_complete_count >= 3:
+        b, created = Badge.objects.get_or_create(
+            badge_id='multi_target', habit=habit,
+            defaults={'earned_at': today, 'extra_data': {'targets_completed': target_complete_count}}
+        )
+        if created:
+            newly_earned.append(b.to_dict())
+
+    return newly_earned
+
+
+# ── API: Habits ────────────────────────────────────────────────────────────
+
+@csrf_exempt
+@login_required_api
+@require_http_methods(["GET", "POST"])
+def habits(request):
+    if request.method == "GET":
+        result = [h.to_dict() for h in Habit.objects.filter(user=request.user)]
+        return JsonResponse(result, safe=False)
+
+    body = json.loads(request.body)
+    new_id = f"custom_{str(request.user.id).replace('-','')[:8]}_{datetime.now().timestamp()}".replace('.', '_')
+
+    target_days = body.get('target_days')
+    target_start = None
+    if target_days:
+        try:
+            target_days = int(target_days)
+            target_start = date.today()
+        except (ValueError, TypeError):
+            target_days = None
+
+    habit = Habit.objects.create(
+        habit_id=new_id,
+        user=request.user,
+        name=body.get('name', ''),
+        icon=body.get('icon', '⭐'),
+        category=body.get('category', 'General'),
+        color=body.get('color', '#c8ff00'),
+        is_default=False,
+        target_days=target_days,
+        target_start=target_start,
+    )
+    return JsonResponse(habit.to_dict(), status=201)
+
+
+@csrf_exempt
+@login_required_api
+@require_http_methods(["PUT", "DELETE"])
+def habit_detail(request, habit_id):
+    try:
+        habit = Habit.objects.get(habit_id=habit_id, user=request.user)
+    except Habit.DoesNotExist:
+        return JsonResponse({"error": "not found"}, status=404)
+
+    if request.method == "PUT":
+        updates = json.loads(request.body)
+        for field in ("name", "icon", "category", "color"):
+            if field in updates:
+                setattr(habit, field, updates[field])
+        if 'target_days' in updates:
+            td = updates['target_days']
+            if td:
+                try:
+                    habit.target_days = int(td)
+                    if not habit.target_start:
+                        habit.target_start = date.today()
+                except (ValueError, TypeError):
+                    habit.target_days = None
+                    habit.target_start = None
+            else:
+                habit.target_days = None
+                habit.target_start = None
+        habit.save()
+        return JsonResponse(habit.to_dict())
+
+    habit.delete()
+    return JsonResponse({"success": True})
+
+
+# ── API: Log ───────────────────────────────────────────────────────────────
+
+@csrf_exempt
+@login_required_api
+@require_http_methods(["POST"])
+def log_habit(request):
+    payload = json.loads(request.body)
+    habit_id = payload["habit_id"]
+    log_date_str = payload.get("date", str(date.today()))
+    log_date = date.fromisoformat(log_date_str)
+
+    try:
+        habit = Habit.objects.get(habit_id=habit_id, user=request.user)
+    except Habit.DoesNotExist:
+        return JsonResponse({"error": "habit not found"}, status=404)
+
+    log_entry, created = HabitLog.objects.get_or_create(habit=habit, log_date=log_date)
+    if not created:
+        log_entry.delete()
+        return JsonResponse({"status": "removed", "date": log_date_str,
+                             "habit_id": habit_id, "new_badges": []})
+
+    logged_dates = set(HabitLog.objects.filter(habit=habit).values_list('log_date', flat=True))
+    new_badges = evaluate_badges(habit, logged_dates)
+
+    return JsonResponse({"status": "added", "date": log_date_str,
+                         "habit_id": habit_id, "new_badges": new_badges})
+
+
+@login_required_api
+@require_http_methods(["GET"])
+def get_logs(request):
+    logs = {}
+    for entry in HabitLog.objects.select_related('habit').filter(habit__user=request.user):
+        ds = str(entry.log_date)
+        logs.setdefault(ds, []).append(entry.habit.habit_id)
+    return JsonResponse(logs)
+
+
+# ── API: Stats ─────────────────────────────────────────────────────────────
+
+@login_required_api
+@require_http_methods(["GET"])
+def get_stats(request):
+    today = date.today()
+    all_habits = Habit.objects.filter(user=request.user)
+
+    logs_by_habit = {}
+    for entry in HabitLog.objects.select_related('habit').filter(habit__user=request.user):
+        logs_by_habit.setdefault(entry.habit.habit_id, set()).add(entry.log_date)
+
+    stats = {}
+    for habit in all_habits:
+        hid = habit.habit_id
+        logged_dates = logs_by_habit.get(hid, set())
+        total = len(logged_dates)
+
+        streak = 0
+        check = today
+        while check in logged_dates:
+            streak += 1
+            check -= timedelta(days=1)
+
+        heatmap = {}
+        for i in range(365):
+            d = today - timedelta(days=i)
+            heatmap[str(d)] = 1 if d in logged_dates else 0
+
+        target_progress = None
+        if habit.target_days and habit.target_start:
+            target_end = habit.target_start + timedelta(days=habit.target_days - 1)
+            window_logs = {d for d in logged_dates if habit.target_start <= d <= target_end}
+            days_remaining = max(0, (target_end - today).days)
+            target_progress = {
+                "target_days":    habit.target_days,
+                "target_start":   str(habit.target_start),
+                "target_end":     str(target_end),
+                "completed":      len(window_logs),
+                "days_remaining": days_remaining,
+                "is_complete":    len(window_logs) >= habit.target_days,
+                "is_expired":     today > target_end and len(window_logs) < habit.target_days,
+            }
+
+        stats[hid] = {"streak": streak, "total": total, "heatmap": heatmap, "target_progress": target_progress}
+
+    return JsonResponse(stats)
+
+
+# ── API: Today ─────────────────────────────────────────────────────────────
+
+@login_required_api
+@require_http_methods(["GET"])
+def get_today(request):
+    today = date.today()
+    completed = list(
+        HabitLog.objects.filter(log_date=today, habit__user=request.user)
+        .values_list('habit__habit_id', flat=True)
+    )
+    return JsonResponse(completed, safe=False)
+
+
+# ── API: Badges ─────────────────────────────────────────────────────────────
+
+@login_required_api
+@require_http_methods(["GET"])
+def get_badges(request):
+    badges = list(Badge.objects.select_related('habit').filter(
+        habit__user=request.user).order_by('-earned_at'))
+    return JsonResponse([b.to_dict() for b in badges], safe=False)
+
+
+@require_http_methods(["GET"])
+def get_badge_definitions(request):
+    return JsonResponse([
+        {"badge_id": b[0], "name": b[1], "emoji": b[2], "description": b[3]}
+        for b in BADGE_DEFINITIONS
+    ], safe=False)
+
+
+# ── API: Current user ───────────────────────────────────────────────────────
+
+@login_required_api
+@require_http_methods(["GET"])
+def get_me(request):
+    u = request.user
+    return JsonResponse({
+        "email":        u.email,
+        "display_name": u.display_name,
+        "avatar_url":   u.avatar_url,
+    })
