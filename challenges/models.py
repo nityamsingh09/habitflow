@@ -91,3 +91,33 @@ class ChallengeLog(models.Model):
 
     class Meta:
         unique_together = ('participant', 'log_date')
+
+
+class ChallengeInvite(models.Model):
+    STATUS_PENDING  = 'pending'
+    STATUS_ACCEPTED = 'accepted'
+    STATUS_DECLINED = 'declined'
+    STATUS_CHOICES  = [('pending','Pending'),('accepted','Accepted'),('declined','Declined')]
+
+    challenge   = models.ForeignKey(Challenge, on_delete=models.CASCADE, related_name='invites')
+    invited_by  = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='sent_invites')
+    invited_user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+                                     related_name='received_invites', null=True, blank=True)
+    invited_email = models.EmailField(blank=True)   # fallback if user not found yet
+    status      = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    created_at  = models.DateTimeField(auto_now_add=True)
+    responded_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        unique_together = ('challenge', 'invited_user')
+
+    def to_dict(self):
+        return {
+            'id':           self.id,
+            'challenge_id': self.challenge_id,
+            'challenge_title': self.challenge.title,
+            'challenge_icon':  self.challenge.habit_icon,
+            'invited_by':   self.invited_by.display_name,
+            'status':       self.status,
+            'created_at':   str(self.created_at),
+        }

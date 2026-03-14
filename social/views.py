@@ -12,7 +12,8 @@ from django.views.decorators.http import require_http_methods
 from accounts.models import User
 from habits.models import Habit, HabitLog, Badge
 from .models import (UserProfile, Follow, FriendRequest, ActivityEvent,
-                     Reaction, Comment, REACTIONS, are_friends, get_friends, is_following)
+                     Reaction, Comment, REACTIONS, are_friends, get_friends, is_following,
+                     GlobalMessage, DirectMessage)
 
 
 def login_required_api(view_func):
@@ -437,3 +438,119 @@ def my_profile_api(request):
             profile.username = new_un
     profile.save()
     return JsonResponse({'ok': True, 'username': profile.username})
+
+
+# ── GLOBAL CHAT ────────────────────────────────────────────────────────────
+
+@csrf_exempt
+def global_chat_messages(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Login required'}, status=401)
+
+    if request.method == 'GET':
+        since_ts = request.GET.get('since')
+        qs = GlobalMessage.objects.select_related('user__profile').order_by('created_at')
+        if since_ts:
+            import datetime as dtlib
+            try:
+                since_dt = dtlib.datetime.fromtimestamp(float(since_ts), tz=dtlib.timezone.utc)
+                qs = qs.filter(created_at__gt=since_dt)
+            except (ValueError, OSError):
+                pass
+        else:
+            # Initial load — last 80 messages
+            qs = qs.order_by('-created_at')[:80]
+            qs = list(reversed(list(qs)))
+            return JsonResponse([m.to_dict() for m in qs], safe=False)
+        return JsonResponse([m.to_dict() for m in qs], safe=False)
+
+    body = json.loads(request.body)
+    text = body.get('text', '').strip()[:500]
+    if not text:
+        return JsonResponse({'error': 'Empty message'}, status=400)
+    msg = GlobalMessage.objects.create(user=request.user, text=text)
+    return JsonResponse({'ok': True, 'message': msg.to_dict()}, status=201)
+
+
+# ── DIRECT MESSAGES ────────────────────────────────────────────────────────
+
+@csrf_exempt
+def direct_messages(request, friend_id):
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Login required'}, status=401)
+
+    try:
+        from accounts.models import User as AccUser
+        friend = AccUser.objects.get(id=friend_id)
+    except Exception:
+        return JsonResponse({'error': 'User not found'}, status=404)
+
+    if request.method == 'GET':
+        since_ts = request.GET.get('since')
+
+        qs = DirectMessage.objects.filter(
+            Q(sender=request.user, recipient=friend) |
+            Q(sender=friend, recipient=request.user)
+        ).order_by('created_at')
+
+        if since_ts:
+            # Return only messages newer than the given unix timestamp
+            from django.utils.timezone import datetime as dt
+            import datetime as dtlib
+            try:
+                since_dt = dtlib.datetime.fromtimestamp(float(since_ts), tz=dtlib.timezone.utc)
+                qs = qs.filter(created_at__gt=since_dt)
+            except (ValueError, OSError):
+                pass
+        else:
+            qs = qs[:100]
+
+        msgs = list(qs)
+
+        # Mark received messages as read (only messages FROM friend TO me)
+        DirectMessage.objects.filter(
+            sender=friend, recipient=request.user, read=False
+        ).update(read=True)
+
+        return JsonResponse([m.to_dict(me=request.user) for m in msgs], safe=False)
+
+    # POST — send a message
+    body = json.loads(request.body)
+    text = body.get('text', '').strip()[:500]
+    if not text:
+        return JsonResponse({'error': 'Empty message'}, status=400)
+
+    # Only friends can DM
+    if not are_friends(request.user, friend):
+        return JsonResponse({'error': 'You can only DM friends'}, status=403)
+
+    msg = DirectMessage.objects.create(sender=request.user, recipient=friend, text=text)
+    return JsonResponse({'ok': True, 'message': msg.to_dict(me=request.user)}, status=201)
+
+
+@login_required_api
+def dm_inbox(request):
+    """Unread count per friend."""
+    unread = DirectMessage.objects.filter(
+        recipient=request.user, read=False
+    ).values('sender').annotate(count=Count('id'))
+    return JsonResponse({str(u['sender']): u['count'] for u in unread})
+
+
+@login_required_api
+def friends_for_invite(request):
+    """Return current user's friends — used by challenge invite modal."""
+    friends = get_friends(request.user)
+    result = []
+    for f in friends:
+        username = ''
+        try: username = f.profile.username
+        except: pass
+        result.append({
+            'user_id':      str(f.id),
+            'display_name': f.display_name,
+            'avatar_url':   f.avatar_url,
+            'username':     username,
+            'email':        f.email,
+        })
+    return JsonResponse(result, safe=False)

@@ -28,4 +28,12 @@ urlpatterns = [
     path('api/profile',                     views.my_profile_api,        name='my_profile'),
     path('api/users/search',                views.search_users,          name='search_users'),
     path('api/users/<str:username>',        views.public_profile,        name='public_profile'),
+
+    # Chat
+    path('api/chat/global',                views.global_chat_messages, name='global_chat'),
+    path('api/chat/dm/<uuid:friend_id>',   views.direct_messages,      name='direct_messages'),
+    path('api/chat/inbox',                 views.dm_inbox,             name='dm_inbox'),
+
+    # Friends list for invite modal
+    path('api/friends/list',               views.friends_for_invite,   name='friends_for_invite'),
 ]

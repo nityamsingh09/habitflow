@@ -142,3 +142,56 @@ def get_friends(user):
 
 def is_following(follower, following):
     return Follow.objects.filter(follower=follower, following=following).exists()
+
+
+# ── CHAT MODELS ────────────────────────────────────────────────────────────
+
+class GlobalMessage(models.Model):
+    user       = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+                                   related_name='global_messages')
+    text       = models.CharField(max_length=500)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['created_at']
+
+    def to_dict(self):
+        username = ''
+        try: username = self.user.profile.username
+        except: pass
+        return {
+            'id':           self.id,
+            'user_id':      str(self.user.id),
+            'display_name': self.user.display_name,
+            'username':     username,
+            'avatar_url':   self.user.avatar_url,
+            'text':         self.text,
+            'created_at':   self.created_at.strftime('%b %d · %H:%M'),
+            'ts':           self.created_at.timestamp(),
+        }
+
+
+class DirectMessage(models.Model):
+    sender     = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+                                   related_name='sent_dms')
+    recipient  = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+                                   related_name='received_dms')
+    text       = models.CharField(max_length=500)
+    read       = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['created_at']
+
+    def to_dict(self, me=None):
+        return {
+            'id':           self.id,
+            'sender_id':    str(self.sender.id),
+            'sender_name':  self.sender.display_name,
+            'sender_av':    self.sender.avatar_url,
+            'text':         self.text,
+            'is_me':        me and self.sender == me,
+            'read':         self.read,
+            'created_at':   self.created_at.strftime('%H:%M'),
+            'ts':           self.created_at.timestamp(),
+        }

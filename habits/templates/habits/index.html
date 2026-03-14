@@ -4,6 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>HabitFlow</title>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <link rel="manifest" href="/static/habits/manifest.json">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -323,7 +324,83 @@ table.mxtbl td.hncell{text-align:left;padding-left:24px}
 .verified-toast{position:fixed;top:24px;left:50%;transform:translateX(-50%) translateY(-80px);background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.35);color:#6ee7b7;border-radius:12px;padding:12px 22px;font-size:13px;font-weight:600;z-index:800;transition:transform .5s cubic-bezier(.34,1.56,.64,1),opacity .4s;opacity:0;white-space:nowrap}
 .verified-toast.show{transform:translateX(-50%) translateY(0);opacity:1}
 
-/* ─── MOBILE RESPONSIVE ──────────────────────────────────────────── */
+.invite-badge{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#f97316;color:#fff;font-size:9px;font-weight:700;font-family:'DM Mono',monospace;margin-left:auto;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+/* Profile/Security page */
+.sec-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px}
+.sec-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:800;margin-bottom:16px}
+.sec-badge{display:inline-block;padding:2px 10px;border-radius:99px;font-family:'DM Mono',monospace;font-size:9px;margin-left:8px}
+.sec-badge.set{background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.25);color:#34d399}
+.sec-badge.notset{background:rgba(249,115,22,.12);border:1px solid rgba(249,115,22,.25);color:#f97316}
+
+/* ── Chat ─────────────────────────────────────────────────────────── */
+.chat-wrap{display:flex;flex-direction:column;height:calc(100vh - 160px);max-height:700px;background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden}
+.chat-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;-webkit-overflow-scrolling:touch}
+.chat-input-bar{display:flex;gap:8px;padding:12px 14px;border-top:1px solid var(--border);background:var(--surface2)}
+.chat-input-bar input{flex:1;background:var(--surface3);border:1.5px solid var(--border2);color:var(--text);border-radius:10px;padding:10px 14px;font-size:13px;outline:none;font-family:'DM Sans',sans-serif}
+.chat-input-bar input:focus{border-color:var(--lime)}
+.chat-send-btn{padding:10px 20px;background:var(--lime);border:none;border-radius:10px;color:var(--bg);font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;touch-action:manipulation;-webkit-tap-highlight-color:transparent;flex-shrink:0}
+.chat-bubble{display:flex;gap:9px;align-items:flex-end}
+.chat-bubble.me{flex-direction:row-reverse}
+.chat-av{width:30px;height:30px;border-radius:50%;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;overflow:hidden}
+.chat-av img{width:100%;height:100%;object-fit:cover}
+.chat-content{max-width:70%}
+.chat-name{font-size:10px;font-family:'DM Mono',monospace;color:var(--muted);margin-bottom:3px}
+.chat-bubble.me .chat-name{text-align:right}
+.chat-text{background:var(--surface2);border:1px solid var(--border);border-radius:14px 14px 14px 4px;padding:9px 13px;font-size:13px;line-height:1.5;word-break:break-word}
+.chat-bubble.me .chat-text{background:var(--lime-dim);border-color:rgba(200,255,0,.2);border-radius:14px 14px 4px 14px;color:var(--text)}
+.chat-ts{font-size:9px;font-family:'DM Mono',monospace;color:var(--muted);margin-top:3px;text-align:right}
+/* DM layout */
+.dm-layout{display:grid;grid-template-columns:220px 1fr;height:calc(100vh - 160px);max-height:700px;background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden}
+.dm-sidebar{border-right:1px solid var(--border);overflow-y:auto;background:var(--surface2)}
+.dm-main{display:flex;flex-direction:column;overflow:hidden}
+.dm-header{padding:14px 16px;border-bottom:1px solid var(--border);min-height:56px;display:flex;align-items:center;gap:10px}
+.dm-friend-item{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;transition:background .15s;border-bottom:1px solid var(--border);touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.dm-friend-item:hover,.dm-friend-item.active{background:var(--surface3)}
+.dm-friend-av{width:34px;height:34px;border-radius:50%;background:var(--lime);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--bg);flex-shrink:0;overflow:hidden}
+.dm-friend-av img{width:100%;height:100%;object-fit:cover}
+.dm-unread-dot{width:8px;height:8px;border-radius:50%;background:#f97316;margin-left:auto;flex-shrink:0}
+@media(max-width:900px){
+  .dm-layout{grid-template-columns:1fr;grid-template-rows:auto 1fr}
+  .dm-sidebar{border-right:none;border-bottom:1px solid var(--border);max-height:140px;overflow-x:auto;overflow-y:hidden;display:flex;flex-direction:row}
+  .dm-friend-item{flex-direction:column;gap:4px;padding:10px 12px;min-width:70px;border-bottom:none;border-right:1px solid var(--border);font-size:10px;text-align:center}
+  .dm-friend-av{width:38px;height:38px}
+  .dm-friend-item .dm-friend-name{font-size:9px;font-family:'DM Mono',monospace;color:var(--text2)}
+  .dm-unread-dot{position:absolute;top:6px;right:6px}
+  .dm-friend-item{position:relative}
+  .chat-wrap{height:calc(100vh - 200px);border-radius:12px}
+  .chat-content{max-width:85%}
+}
+
+
+/* ── Pricing ─────────────────────────────────────────── */
+.plans-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:720px;margin:0 auto}
+.plan-card{background:var(--surface);border:1.5px solid var(--border);border-radius:20px;padding:28px 24px;position:relative;transition:border-color .2s}
+.plan-card.premium{border-color:var(--lime);background:linear-gradient(160deg,var(--surface),rgba(200,255,0,.04))}
+.plan-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--lime);color:var(--bg);font-family:'Syne',sans-serif;font-size:10px;font-weight:800;padding:3px 14px;border-radius:99px;white-space:nowrap;letter-spacing:.5px}
+.plan-name{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;margin-bottom:4px}
+.plan-price{font-family:'Syne',sans-serif;font-size:36px;font-weight:800;color:var(--lime);letter-spacing:-2px;margin:12px 0 4px}
+.plan-price span{font-size:14px;color:var(--muted);font-weight:400;letter-spacing:0}
+.plan-features{list-style:none;padding:0;margin:16px 0 20px;display:flex;flex-direction:column;gap:8px}
+.plan-features li{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text2)}
+.plan-features li::before{content:'✓';color:var(--lime);font-weight:700;flex-shrink:0}
+.plan-features li.no::before{content:'✗';color:var(--muted)}
+.plan-features li.no{color:var(--muted)}
+.plan-btn{width:100%;padding:13px;border-radius:11px;border:none;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.plan-btn.free{background:var(--surface2);border:1px solid var(--border2);color:var(--text2)}
+.plan-btn.paid{background:var(--lime);color:var(--bg)}
+.plan-btn.paid:hover{background:var(--lime2);transform:translateY(-1px)}
+.plan-toggle{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:28px}
+.ptog-btn{padding:7px 20px;border-radius:99px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;touch-action:manipulation;font-family:'DM Sans',sans-serif}
+.ptog-btn.active{background:var(--lime);border-color:var(--lime);color:var(--bg)}
+.ptog-save{background:rgba(200,255,0,.12);border:1px solid rgba(200,255,0,.2);color:var(--lime);font-size:10px;font-family:'DM Mono',monospace;padding:2px 8px;border-radius:99px}
+/* Free limit banner */
+.free-limit-banner{background:rgba(200,255,0,.06);border:1px solid rgba(200,255,0,.15);border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.flb-text{flex:1;font-size:12px;color:var(--text2)}
+.flb-btn{padding:6px 14px;background:var(--lime);border:none;border-radius:8px;color:var(--bg);font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;touch-action:manipulation;font-family:'DM Sans',sans-serif}
+@media(max-width:640px){.plans-grid{grid-template-columns:1fr}}
+
+/* ─── MOBILE RESPONSIVE/* ─── MOBILE RESPONSIVE ──────────────────────────────────────────── */
 @media(max-width:900px){
   /* Sidebar: slide in/out */
   .sidebar{transform:translateX(-110%);z-index:300}
@@ -340,7 +417,7 @@ table.mxtbl td.hncell{text-align:left;padding-left:24px}
 
   /* Content padding — include ALL page wrappers */
   .pg-hd,.today-wrap,.matrix-wrap,.heatmap-wrap,
-  .manage-wrap,.badges-wrap,
+  .manage-wrap,.badges-wrap,.sec-card,
   #page-quests>*:not(.pg-hd),
   #page-insights>*:not(.pg-hd),
   #page-challenges>*:not(.pg-hd){
@@ -402,6 +479,7 @@ table.mxtbl td.hncell{text-align:left;padding-left:24px}
   /* New page grids → single column */
   #page-quests > div[style*="grid-template-columns:1fr 1fr"],
   #page-quests > div > div{max-width:100%}
+  #profileContent{grid-template-columns:1fr !important;display:flex !important;flex-direction:column !important}
   #page-quests > div[style*="display:grid"]{
     display:flex !important;flex-direction:column !important;gap:14px !important}
 
@@ -509,12 +587,12 @@ table.mxtbl td.hncell{text-align:left;padding-left:24px}
 <div class="hamburger" id="hamburger" onclick="toggleSidebar()"><span></span><span></span><span></span></div>
 <nav id="bottomNav" style="display:none">
   <div class="bn-item active" onclick="mobileNav('today',this)"><span class="bn-ico">☀️</span>Today</div>
-  <div class="bn-item" onclick="mobileNav('matrix',this)"><span class="bn-ico">📊</span>Matrix</div>
-  <div class="bn-item" onclick="mobileNav('challenges',this)"><span class="bn-ico">⚔️</span>Challenges</div>
+  <div class="bn-item" onclick="mobileNav('challenges',this)"><span class="bn-ico">⚔️</span>Battles</div>
+  <div class="bn-item" onclick="mobileNav('globalchat',this)"><span class="bn-ico">💬</span>Chat</div>
+  <div class="bn-item" onclick="mobileNav('dmchat',this)"><span class="bn-ico">✉️</span>DMs<span id="dmBnBadge" style="display:none;background:#f97316;color:#fff;font-size:8px;padding:0 4px;border-radius:99px;margin-left:2px">0</span></div>
   <div class="bn-item" onclick="mobileNav('quests',this)"><span class="bn-ico">⚡</span>Quests</div>
-  <div class="bn-item" onclick="mobileNav('insights',this)"><span class="bn-ico">🧠</span>Insights</div>
 </nav>
-<div class="sb-backdrop" id="sbBackdrop" onclick="toggleSidebar()"></div>
+<div class="sb-backdrop" id="sbBackdrop" onclick="toggleSidebar(true)"></div>
 
 <!-- Badge earned popup -->
 <div class="badge-popup" id="badgePopup">
@@ -559,6 +637,9 @@ table.mxtbl td.hncell{text-align:left;padding-left:24px}
     <div class="nav-item" onclick="switchPage('challenges',this)"><span class="nav-ico">⚔️</span> Challenges</div>
     <div class="nav-section-label">Community</div>
     <div class="nav-item" onclick="window.location.href='/social/'"><span class="nav-ico">🌍</span> Social & Leaderboard</div>
+    <div class="nav-item" onclick="switchPage('globalchat',this)"><span class="nav-ico">💬</span> Global Chat</div>
+    <div class="nav-item" onclick="switchPage('dmchat',this)"><span class="nav-ico">✉️</span> Friends Chat <span id="dmUnreadBadge" style="display:none;background:#f97316;color:#fff;font-size:9px;padding:1px 6px;border-radius:99px;font-family:'DM Mono',monospace;margin-left:auto">0</span></div>
+    <div class="nav-item" onclick="switchPage('profile',this)"><span class="nav-ico">⚙️</span> Profile & Security</div>
   </nav>
   <div class="sidebar-footer">
     <div id="xpBarWrap" style="padding:8px 12px 0;margin-bottom:6px">
@@ -606,6 +687,7 @@ table.mxtbl td.hncell{text-align:left;padding-left:24px}
         <div class="prog-top"><span id="progTxt">0 of 0 habits complete</span><span class="prog-pct" id="progPct">0%</span></div>
         <div class="prog-bar"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
       </div>
+      <div id="freeLimitBanner"></div>
       <div class="cat-filter" id="catFilter"></div>
       <div class="habits-grid" id="habitsGrid"></div>
     </div>
@@ -650,6 +732,56 @@ table.mxtbl td.hncell{text-align:left;padding-left:24px}
   <div class="page" id="page-manage">
     <div class="pg-hd"><div><h1 class="pg-title">Manage<em> Habits</em></h1><p class="pg-sub">Edit, remove, or add habits to your stack.</p></div></div>
     <div class="manage-wrap"><div class="manage-list" id="manageList"></div></div>
+  </div>
+
+
+
+  <!-- UPGRADE PAGE -->
+  <div class="page" id="page-upgrade">
+    <div class="pg-hd"><h1 class="pg-title">Choose Your<em> Plan</em></h1><p class="pg-sub">Upgrade to unlock unlimited habits, advanced analytics, and more.</p></div>
+    <div id="upgradeContent"></div>
+  </div>
+
+  <!-- PROFILE & SECURITY PAGE -->
+  <div class="page" id="page-profile">
+    <div class="pg-hd"><h1 class="pg-title">Profile &amp;<em> Security</em></h1><p class="pg-sub">Manage your account and set or change your password.</p></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:800px" id="profileContent">
+      <div style="display:flex;align-items:center;gap:10px;padding:40px;color:var(--muted);font-family:'DM Mono',monospace;font-size:11px"><div class="spin"></div>Loading…</div>
+    </div>
+  </div>
+
+
+  <!-- GLOBAL CHAT PAGE -->
+  <div class="page" id="page-globalchat">
+    <div class="pg-hd"><h1 class="pg-title">Global<em> Chat</em></h1><p class="pg-sub">Chat with all HabitFlow users in real time.</p></div>
+    <div class="chat-wrap">
+      <div class="chat-messages" id="globalMessages"></div>
+      <div class="chat-input-bar">
+        <input id="globalChatInput" type="text" placeholder="Say something to the community…" maxlength="500" onkeydown="if(event.key==='Enter')sendGlobalMessage()"/>
+        <button onclick="sendGlobalMessage()" class="chat-send-btn">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FRIENDS DM PAGE -->
+  <div class="page" id="page-dmchat">
+    <div class="pg-hd"><h1 class="pg-title">Friends<em> Chat</em></h1><p class="pg-sub">Private messages with your friends.</p></div>
+    <div class="dm-layout">
+      <div class="dm-sidebar">
+        <div style="padding:12px 14px;font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--border)">Friends</div>
+        <div id="dmFriendList"></div>
+      </div>
+      <div class="dm-main">
+        <div class="dm-header" id="dmHeader">
+          <div style="color:var(--muted);font-family:'DM Mono',monospace;font-size:11px;padding:20px">Select a friend to start chatting</div>
+        </div>
+        <div class="chat-messages" id="dmMessages" style="display:none"></div>
+        <div class="chat-input-bar" id="dmInputBar" style="display:none">
+          <input id="dmChatInput" type="text" placeholder="Message…" maxlength="500" onkeydown="if(event.key==='Enter')sendDM()"/>
+          <button onclick="sendDM()" class="chat-send-btn">Send</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- QUESTS PAGE -->
@@ -766,6 +898,7 @@ const COLORS=['#c8ff00','#34d399','#60a5fa','#f87171','#fb923c','#e879f9','#38bd
 const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
 const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 let allHabits=[],allLogs={},allStats={},todayDone=[],allBadges=[],badgeDefs=[];
+let _sub = {plan:'free', is_premium:false, habit_limit:5}; // populated after loadAll
 let selColor=COLORS[0],editingId=null,pendingDeleteId=null;
 let matrixY,matrixM,activeWeek=0,lineChartI=null;
 const radCharts={};
@@ -815,16 +948,20 @@ function toggleTargetInput(){
 }
 
 async function loadAll(){
-  [allHabits,allLogs,allStats,todayDone,allBadges,badgeDefs]=await Promise.all([
+  const [habits,logs,stats,today,badges,defs,meData] = await Promise.all([
     fetch('/api/habits').then(r=>r.json()),
     fetch('/api/logs').then(r=>r.json()),
     fetch('/api/stats').then(r=>r.json()),
     fetch('/api/today').then(r=>r.json()),
     fetch('/api/badges').then(r=>r.json()),
     fetch('/api/badge-definitions').then(r=>r.json()),
+    fetch('/api/me').then(r=>r.json()),
   ]);
+  allHabits=habits; allLogs=logs; allStats=stats; todayDone=today; allBadges=badges; badgeDefs=defs;
+  if(meData?.subscription) _sub = meData.subscription;
   renderToday();
   updateBadgeNav();
+  updateUpgradeNav();
 }
 
 function updateBadgeNav(){
@@ -840,11 +977,14 @@ function switchPage(page,el){
   if(page==='heatmap')renderHeatmap();
   if(page==='manage')renderManage();
   if(page==='badges')renderBadges();
-  if(window.innerWidth<900)toggleSidebar();
+  if(window.innerWidth<900)toggleSidebar(true);
 }
-function toggleSidebar(){
-  document.getElementById('sidebar').classList.toggle('open');
-  document.getElementById('sbBackdrop').classList.toggle('open');
+function toggleSidebar(forceClose){
+  const sb  = document.getElementById('sidebar');
+  const bd  = document.getElementById('sbBackdrop');
+  const open = sb.classList.contains('open');
+  if(forceClose || open){ sb.classList.remove('open'); bd.classList.remove('open'); }
+  else { sb.classList.add('open'); bd.classList.add('open'); }
 }
 function mobileNav(page, el){
   // Update bottom nav active state
@@ -864,16 +1004,39 @@ function renderToday(){
   const cats=['All',...new Set(allHabits.map(h=>h.category))];
   const cf=document.getElementById('catFilter');cf.innerHTML='';
   cats.forEach(c=>{const b=document.createElement('button');b.className='cat-pill'+(selCat===c?' active':'');b.textContent=c;b.onclick=()=>{selCat=c;renderToday();};cf.appendChild(b);});
+
   const filtered=selCat==='All'?allHabits:allHabits.filter(h=>h.category===selCat);
+
+  // Free plan: only show first 3 habits on Today page
+  const DISPLAY_LIMIT = _sub.is_premium ? filtered.length : 3;
+  const visible  = filtered.slice(0, DISPLAY_LIMIT);
+  const hidden   = filtered.slice(DISPLAY_LIMIT);
+
   const grid=document.getElementById('habitsGrid');grid.innerHTML='';
-  filtered.forEach((h,i)=>{
+
+  // Free limit banner (shown when user has habits beyond limit)
+  const bannerWrap = document.getElementById('freeLimitBanner');
+  if(bannerWrap){
+    if(!_sub.is_premium && allHabits.length > 0){
+      const used = allHabits.length;
+      const limit = _sub.habit_limit || 5;
+      if(used >= limit){
+        bannerWrap.innerHTML=`<div class="free-limit-banner"><span style="font-size:18px">⭐</span><div class="flb-text"><strong>Free plan:</strong> ${used}/${limit} habits used. Upgrade to add unlimited habits.</div><button class="flb-btn" onclick="switchPage('upgrade',document.querySelector('.nav-item:last-child'))">Upgrade</button></div>`;
+      } else {
+        bannerWrap.innerHTML=`<div class="free-limit-banner"><span style="font-size:18px">🆓</span><div class="flb-text"><strong>Free plan:</strong> ${used}/${limit} habits. <a href="#" onclick="switchPage('upgrade',null);return false" style="color:var(--lime)">Upgrade</a> for unlimited.</div></div>`;
+      }
+    } else if(_sub.is_premium){
+      bannerWrap.innerHTML='';
+    }
+  }
+
+  visible.forEach((h,i)=>{
     const done=todayDone.includes(h.id);
     const stat=allStats[h.id]||{};
     const weekPct=stat.total?Math.min(100,Math.round(stat.total/30*100)):0;
     const tp=stat.target_progress;
     const card=document.createElement('div');card.className='habit-card'+(done?' done':'');
     card.style.setProperty('--hc',h.color);card.style.animationDelay=(i*.04)+'s';
-
     let targetHtml='';
     if(tp){
       const pct=Math.min(100,Math.round(tp.completed/tp.target_days*100));
@@ -885,11 +1048,23 @@ function renderToday(){
         targetHtml=`<div class="target-bar-wrap"><div class="target-bar-top"><span class="target-label"><span class="ticon">🎯</span> ${tp.completed}/${tp.target_days} days</span><span class="target-count" style="color:${h.color}">${pct}%</span></div><div class="target-track"><div class="target-fill" style="width:${pct}%;background:${h.color}"></div></div><div class="target-days-left">${tp.days_remaining} days remaining</div></div>`;
       }
     }
-
     card.innerHTML=`<div class="hcard-top"><div class="hcard-ico" style="background:${h.color}18">${h.icon}</div><div class="hcard-meta"><div class="hcard-name">${h.name}</div><div class="hcard-cat">${h.category}</div></div><div class="hck"></div></div>${targetHtml}<div class="hcard-bot"><div class="hstreak"><span>🔥</span><strong>${stat.streak||0}</strong>day streak</div><div class="hminibar"><div class="hminibar-fill" style="width:${weekPct}%"></div></div><div class="htotal">${stat.total||0} total</div></div>`;
     card.onclick=()=>toggleHabit(h.id,card);
     grid.appendChild(card);
   });
+
+  // Show locked habits for free users
+  if(hidden.length > 0 && !_sub.is_premium){
+    const lockDiv = document.createElement('div');
+    lockDiv.style.cssText='grid-column:1/-1;background:var(--surface);border:1.5px dashed var(--border2);border-radius:16px;padding:22px;text-align:center';
+    lockDiv.innerHTML=`
+      <div style="font-size:28px;margin-bottom:8px">🔒</div>
+      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:15px;margin-bottom:6px">${hidden.length} more habit${hidden.length>1?'s':''} hidden</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:14px">Free plan shows 3 habits on Today. Upgrade to see all ${allHabits.length}.</div>
+      <button onclick="switchPage('upgrade',null)" style="padding:9px 22px;background:var(--lime);border:none;border-radius:10px;color:var(--bg);font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation">⭐ Upgrade to Premium</button>`;
+    grid.appendChild(lockDiv);
+  }
+
   updateHero();
 }
 
@@ -952,16 +1127,23 @@ function changeMonth(d){matrixM+=d;if(matrixM>11){matrixM=0;matrixY++;}if(matrix
 function ds(y,m,d){return`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;}
 function getDIM(y,m){return new Date(y,m+1,0).getDate();}
 
+// Free plan: only first 5 habits visible across all views (matrix, heatmap, manage)
+function visibleHabits(){
+  if(_sub.is_premium) return allHabits;
+  return allHabits.slice(0, _sub.habit_limit || 5);
+}
+
 function renderMatrix(){
   document.getElementById('mnLabel').textContent=`${MONTHS[matrixM]} ${matrixY}`;
   const days=getDIM(matrixY,matrixM),todayDs=nowDate.toISOString().split('T')[0];
   const mLogs={};for(let d=1;d<=days;d++){const s=ds(matrixY,matrixM,d);mLogs[s]=allLogs[s]||[];}
-  const dpd={},dpH={};allHabits.forEach(h=>dpH[h.id]=0);
+  const habits=visibleHabits();
+  const dpd={},dpH={};habits.forEach(h=>dpH[h.id]=0);
   for(let d=1;d<=days;d++){const s=ds(matrixY,matrixM,d);dpd[s]=(mLogs[s]||[]).length;(mLogs[s]||[]).forEach(id=>{if(dpH[id]!==undefined)dpH[id]++;});}
   const past=Array.from({length:days},(_,i)=>i+1).filter(d=>ds(matrixY,matrixM,d)<=todayDs);
-  const totalDone=Object.values(dpH).reduce((a,b)=>a+b,0),totalPoss=past.length*allHabits.length;
+  const totalDone=Object.values(dpH).reduce((a,b)=>a+b,0),totalPoss=past.length*habits.length;
   const mPct=totalPoss?Math.round(totalDone/totalPoss*100):0;
-  const perfect=past.filter(d=>dpd[ds(matrixY,matrixM,d)]===allHabits.length).length;
+  const perfect=past.filter(d=>dpd[ds(matrixY,matrixM,d)]===habits.length).length;
   let bs=0,cs=0;for(let d=1;d<=days;d++){const s=ds(matrixY,matrixM,d);(mLogs[s]||[]).length>0?(cs++,bs=Math.max(bs,cs)):cs=0;}
   renderKPIs(mPct,totalDone,perfect,bs,past.length);
   renderLineChart(days,dpd,todayDs);
@@ -987,7 +1169,7 @@ function renderLineChart(days,dpd,todayDs){
 
 function renderRadials(dpH,pd){
   const g=document.getElementById('radialGrid');Object.values(radCharts).forEach(c=>c.destroy());Object.keys(radCharts).forEach(k=>delete radCharts[k]);g.innerHTML='';
-  allHabits.slice(0,8).forEach(h=>{
+  visibleHabits().slice(0,8).forEach(h=>{
     const pct=pd?Math.round((dpH[h.id]||0)/pd*100):0,cid='rc_'+h.id.replace(/\W/g,'_');
     const el=document.createElement('div');el.className='radial-item';
     el.innerHTML=`<div class="radial-wrap"><canvas id="${cid}" width="70" height="70"></canvas><div class="radial-center" style="color:${h.color}">${pct}%</div></div><div class="radial-name">${h.icon} ${h.name.split(' ').slice(0,2).join(' ')}</div>`;
@@ -1007,13 +1189,14 @@ function renderMxTableOnly(){const days=getDIM(matrixY,matrixM),mL={};for(let d=
 
 function renderMxTable(days,mLogs,todayDs){
   const vd=getVdays(days),t=document.getElementById('mxtbl');t.innerHTML='';
+  const habits=visibleHabits();
   const thead=document.createElement('thead');
   let hr='<tr><th class="hcol">Habit</th>';
   vd.forEach(d=>{const s=ds(matrixY,matrixM,d),dow=new Date(s).getDay(),isT=s===todayDs;hr+=`<th class="${isT?'today-th':''}"><div style="font-size:9px;color:var(--muted);font-family:'DM Mono',monospace">${DAYS[dow]}</div><div style="font-size:13px;font-weight:800;color:${isT?'var(--lime)':'var(--text)'};font-family:'Syne',sans-serif">${d}</div></th>`;});
   hr+='<th style="color:var(--muted);font-size:10px;font-family:\'DM Mono\',monospace">GOAL</th><th style="color:var(--muted);font-size:10px;font-family:\'DM Mono\',monospace">DONE</th><th style="color:var(--muted);font-size:10px;font-family:\'DM Mono\',monospace;min-width:110px">%</th></tr>';
   thead.innerHTML=hr;t.appendChild(thead);
   const tbody=document.createElement('tbody');
-  allHabits.forEach(h=>{
+  habits.forEach(h=>{
     const tr=document.createElement('tr');
     let html=`<td class="hncell"><div class="hmini"><span class="hmini-ico">${h.icon}</span><div><div class="hmini-n">${h.name}</div><div class="hmini-c">${h.category}</div></div></div></td>`;
     let dc=0;
@@ -1025,7 +1208,7 @@ function renderMxTable(days,mLogs,todayDs){
   });
   const fr=document.createElement('tr');fr.className='dayfoot';
   let fh='<td class="hcol">Daily %</td>';
-  vd.forEach(d=>{const s=ds(matrixY,matrixM,d),logs=mLogs[s]||[],pct=allHabits.length&&s<=todayDs?Math.round(logs.length/allHabits.length*100):null,col=pct===null?'var(--muted)':pct>=80?'#34d399':pct>=50?'#fbbf24':'#f87171';fh+=`<td style="color:${col}">${pct!==null?pct+'%':'—'}</td>`;});
+  vd.forEach(d=>{const s=ds(matrixY,matrixM,d),logs=mLogs[s]||[],pct=habits.length&&s<=todayDs?Math.round(logs.length/habits.length*100):null,col=pct===null?'var(--muted)':pct>=80?'#34d399':pct>=50?'#fbbf24':'#f87171';fh+=`<td style="color:${col}">${pct!==null?pct+'%':'—'}</td>`;});
   fh+='<td colspan="3"></td>';fr.innerHTML=fh;tbody.appendChild(fr);t.appendChild(tbody);
 }
 
@@ -1047,9 +1230,10 @@ async function toggleCell(hid,dateStr,btn){
 function renderHeatmap(){
   const hf=document.getElementById('hfilter');hf.innerHTML='';
   const mkP=(lbl,id,color)=>{const b=document.createElement('button');b.className='hpill'+(selHid===id?' active':'');if(selHid===id){b.style.background=color||'#c8ff00';b.style.color='#000';}b.textContent=lbl;b.onclick=()=>{selHid=id;renderHeatmap();};hf.appendChild(b);};
-  mkP('All Habits',null,'#c8ff00');allHabits.forEach(h=>mkP(h.icon+' '+h.name,h.id,h.color));
+  const habits=visibleHabits();
+  mkP('All Habits',null,'#c8ff00');habits.forEach(h=>mkP(h.icon+' '+h.name,h.id,h.color));
   const cards=document.getElementById('hcards');cards.innerHTML='';
-  (selHid?allHabits.filter(h=>h.id===selHid):allHabits).forEach(h=>cards.appendChild(buildHCard(h)));
+  (selHid?habits.filter(h=>h.id===selHid):habits).forEach(h=>cards.appendChild(buildHCard(h)));
 }
 
 function buildHCard(habit){
@@ -1123,7 +1307,9 @@ function renderBadges(){
 /* ── MANAGE ─────────────────────────────────────────────────────────── */
 function renderManage(){
   const list=document.getElementById('manageList');list.innerHTML='';
-  allHabits.forEach(h=>{
+  const habits = visibleHabits();
+  const locked = _sub.is_premium ? [] : allHabits.slice(_sub.habit_limit||5);
+  habits.forEach(h=>{
     const item=document.createElement('div');item.className='manage-item';
     const tp=allStats[h.id]&&allStats[h.id].target_progress;
     let targetPill='';
@@ -1134,6 +1320,13 @@ function renderManage(){
     item.innerHTML=`<div class="mitem-ico" style="background:${h.color}18">${h.icon}</div><div class="mitem-info"><div class="mitem-name">${h.name}</div><div class="mitem-cat">${h.category} · <span style="color:${h.color};font-family:'DM Mono',monospace;font-size:10px">${h.color}</span></div>${targetPill}</div><div class="mitem-dot" style="background:${h.color}"></div><div class="mitem-actions"><button class="bedit" onclick="openEditModal('${h.id}')">✏️ Edit</button><button class="bdel" onclick="openConfirmDelete('${h.id}','${h.name.replace(/'/g,"\\'")}')">🗑️ Delete</button></div>`;
     list.appendChild(item);
   });
+  // Show locked habits for free users
+  if(locked.length>0){
+    const div=document.createElement('div');
+    div.style.cssText='background:var(--surface2);border:1.5px dashed var(--border2);border-radius:14px;padding:16px 18px;margin-top:10px;display:flex;align-items:center;gap:12px';
+    div.innerHTML=`<span style="font-size:22px">🔒</span><div style="flex:1"><div style="font-size:13px;font-weight:600">${locked.length} habit${locked.length>1?'s':''} locked on Free plan</div><div style="font-size:11px;color:var(--muted);margin-top:2px">${locked.map(h=>h.icon+' '+h.name).join(', ')}</div></div><button onclick="switchPage('upgrade',null)" style="padding:7px 16px;background:var(--lime);border:none;border-radius:9px;color:var(--bg);font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;touch-action:manipulation">⭐ Upgrade</button>`;
+    list.appendChild(div);
+  }
 }
 
 /* ── MODALS ─────────────────────────────────────────────────────────── */
@@ -1187,7 +1380,16 @@ async function saveHabit(){
     closeOverlay('habitOverlay');await loadAll();if(document.getElementById('page-manage').classList.contains('active'))renderManage();
     showToast('✅ Habit updated!','#c8ff00');
   } else {
-    await fetch('/api/habits',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,icon,category,color:selColor,target_days:targetDays,is_public:isPublic})});
+    const resp = await fetch('/api/habits',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,icon,category,color:selColor,target_days:targetDays,is_public:isPublic})});
+    if(resp.status === 403){
+      const err = await resp.json();
+      if(err.error === 'free_limit'){
+        closeOverlay('habitOverlay');
+        showToast('⭐ Upgrade to add more habits!','#fbbf24');
+        setTimeout(()=>switchPage('upgrade', document.getElementById('upgradeNavItem')), 400);
+        return;
+      }
+    }
     closeOverlay('habitOverlay');await loadAll();if(document.getElementById('page-manage').classList.contains('active'))renderManage();
     showToast('🎉 Habit added!','#c8ff00');
   }
@@ -1363,11 +1565,23 @@ function openCreateChallenge(){document.getElementById('challengeOverlay').class
 async function saveChallenge(){
   const body={title:document.getElementById('chTitle').value.trim(),habit_name:document.getElementById('chHabit').value.trim(),habit_icon:document.getElementById('chIcon').value.trim()||'🎯',description:document.getElementById('chDesc').value.trim(),duration_days:parseInt(document.getElementById('chDuration').value)};
   if(!body.title||!body.habit_name){showToast('Fill in title and habit name','#f87171');return;}
-  await fetch('/api/challenges/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  const resp = await fetch('/api/challenges/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  if(resp.status===403){
+    const err=await resp.json();
+    closeOverlay('challengeOverlay');
+    showToast('⭐ Premium required to create challenges','#fbbf24');
+    setTimeout(()=>switchPage('upgrade',document.getElementById('upgradeNavItem')),400);
+    return;
+  }
   closeOverlay('challengeOverlay');showToast('⚔️ Challenge created!','#c8ff00');loadChallenges();
 }
 async function joinChallenge(id){
-  await fetch('/api/challenges/'+id+'/join',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+  const resp = await fetch('/api/challenges/'+id+'/join',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+  if(resp.status===403){
+    showToast('⭐ Premium required to join challenges','#fbbf24');
+    setTimeout(()=>switchPage('upgrade',document.getElementById('upgradeNavItem')),400);
+    return;
+  }
   showToast('Joined!','#c8ff00');loadChallenges();
 }
 async function logChallenge(id){
@@ -1466,7 +1680,699 @@ switchPage=function(page,el){
     const b=document.getElementById('questBadge');
     if(b){b.textContent=n;b.style.display=n?'inline-block':'none';}
   }catch(e){}
+  checkPendingInvites();
+  // Poll DM unread every 15s
+  async function pollDMUnread(){
+    try{
+      const u=await fetch('/api/chat/inbox').then(r=>r.json());
+      const total=Object.values(u).reduce((a,b)=>a+b,0);
+      const badge=document.getElementById('dmUnreadBadge');
+      if(badge){badge.textContent=total;badge.style.display=total?'inline-block':'none';}
+    }catch(e){}
+  }
+  pollDMUnread();
+  setInterval(pollDMUnread,15000);
 })();
+
+// ═══ PATCH switchPage for new pages ════════════════════════════════════════
+const _origSwitchProfile = switchPage;
+switchPage = function(page, el){
+  _origSwitchProfile(page, el);
+  if(page==='profile')    loadProfilePage();
+  if(page==='globalchat') initGlobalChat();
+  if(page==='dmchat')     initDMChat();
+  if(page==='upgrade')    loadUpgradePage();
+};
+
+// ═══ GLOBAL CHAT ════════════════════════════════════════════════════════════
+let _gcLastTs = 0;
+let _gcPollTimer = null;
+
+function initGlobalChat(){
+  clearInterval(_gcPollTimer);
+  loadGlobalMessages(true);
+  _gcPollTimer = setInterval(pollGlobalMessages, 3000);
+}
+
+async function loadGlobalMessages(initial){
+  const el = document.getElementById('globalMessages');
+  if(!el) return;
+  if(initial) el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-family:\'DM Mono\',monospace;font-size:11px">Loading…</div>';
+  const msgs = await fetch('/api/chat/global').then(r=>r.json()).catch(()=>[]);
+  if(!msgs.length && initial){ el.innerHTML='<div style="padding:30px;text-align:center;color:var(--muted);font-family:\'DM Mono\',monospace;font-size:11px">No messages yet. Say hi! 👋</div>'; return; }
+  if(msgs.length) _gcLastTs = msgs[msgs.length-1].ts;
+  renderChatMessages(el, msgs, '{{ user.id }}', initial);
+}
+
+async function pollGlobalMessages(){
+  if(!document.getElementById('page-globalchat')?.classList.contains('active')) return;
+  const msgs = await fetch('/api/chat/global?since='+_gcLastTs).then(r=>r.json()).catch(()=>[]);
+  if(!msgs.length) return;
+  _gcLastTs = msgs[msgs.length-1].ts;
+  const el = document.getElementById('globalMessages');
+  appendChatMessages(el, msgs, '{{ user.id }}');
+}
+
+async function sendGlobalMessage(){
+  const inp = document.getElementById('globalChatInput');
+  const text = inp.value.trim();
+  if(!text) return;
+  inp.value = '';
+  const d = await fetch('/api/chat/global',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text})}).then(r=>r.json());
+  if(d.message){
+    _gcLastTs = d.message.ts;
+    const el = document.getElementById('globalMessages');
+    appendChatMessages(el, [d.message], '{{ user.id }}');
+  }
+}
+
+// ═══ FRIENDS DM CHAT ════════════════════════════════════════════════════════
+let _dmFriendId   = null;
+let _dmFriendName = '';
+let _dmPollTimer  = null;
+let _dmLastTs     = 0;   // unix float — tracks last seen message timestamp
+
+async function initDMChat(){
+  clearInterval(_dmPollTimer);
+  const listEl = document.getElementById('dmFriendList');
+  if(listEl) listEl.innerHTML = '<div style="padding:14px;color:var(--muted);font-size:11px;font-family:\'DM Mono\',monospace">Loading…</div>';
+
+  const [friends, unread] = await Promise.all([
+    fetch('/api/friends/list').then(r=>r.json()).catch(()=>[]),
+    fetch('/api/chat/inbox').then(r=>r.json()).catch(()=>({})),
+  ]);
+  if(!listEl) return;
+  if(!friends.length){
+    listEl.innerHTML='<div style="padding:14px;color:var(--muted);font-size:11px;font-family:\'DM Mono\',monospace">No friends yet.<br>Add friends from Social!</div>';
+    return;
+  }
+  listEl.innerHTML = friends.map(f=>{
+    const av = f.avatar_url
+      ? `<img src="${f.avatar_url}" style="width:100%;height:100%;object-fit:cover"/>`
+      : (f.display_name||'?')[0].toUpperCase();
+    const hasUnread = unread[f.user_id] > 0;
+    const isActive  = _dmFriendId === f.user_id;
+    return `<div class="dm-friend-item${isActive?' active':''}" data-fid="${f.user_id}" onclick="openDM('${f.user_id}','${(f.display_name||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'")}',this)">
+      <div class="dm-friend-av">${av}</div>
+      <div class="dm-friend-name" style="font-size:12px;font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.display_name}</div>
+      ${hasUnread?`<div class="dm-unread-dot"></div>`:''}
+    </div>`;
+  }).join('');
+
+  // Re-open previously selected conversation if any
+  if(_dmFriendId){
+    const item = listEl.querySelector(`[data-fid="${_dmFriendId}"]`);
+    if(item) item.classList.add('active');
+  }
+}
+
+async function openDM(friendId, friendName, clickedEl){
+  // Clear existing poll
+  clearInterval(_dmPollTimer);
+
+  _dmFriendId   = friendId;
+  _dmFriendName = friendName;
+  _dmLastTs     = 0;
+
+  // Update active state in friend list
+  document.querySelectorAll('.dm-friend-item').forEach(el => el.classList.remove('active'));
+  if(clickedEl) clickedEl.classList.add('active');
+  // Remove unread dot
+  const dot = clickedEl?.querySelector('.dm-unread-dot');
+  if(dot) dot.remove();
+
+  // Show header with friend name
+  const hdr = document.getElementById('dmHeader');
+  if(hdr) hdr.innerHTML = `
+    <div style="width:34px;height:34px;border-radius:50%;background:var(--lime);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--bg);flex-shrink:0">${(friendName||'?')[0].toUpperCase()}</div>
+    <div style="font-weight:700;font-size:14px">${friendName}</div>`;
+
+  // Show messages area + input
+  const msgsEl   = document.getElementById('dmMessages');
+  const inputBar = document.getElementById('dmInputBar');
+  if(msgsEl)   { msgsEl.style.display='flex'; msgsEl.innerHTML='<div style="padding:20px;text-align:center;color:var(--muted);font-size:11px;font-family:\'DM Mono\',monospace">Loading…</div>'; }
+  if(inputBar) { inputBar.style.display='flex'; document.getElementById('dmChatInput')?.focus(); }
+
+  // Load full history (no ?since param = all 100)
+  const msgs = await fetch('/api/chat/dm/'+friendId).then(r=>r.json()).catch(()=>[]);
+  if(!msgs.length){
+    if(msgsEl) msgsEl.innerHTML='<div style="padding:30px;text-align:center;color:var(--muted);font-size:11px;font-family:\'DM Mono\',monospace">No messages yet. Say hi! 👋</div>';
+  } else {
+    if(msgsEl) renderChatMessages(msgsEl, msgs, '{{ user.id }}', true);
+    // Set _dmLastTs to the latest message timestamp
+    _dmLastTs = msgs.reduce((max, m) => Math.max(max, m.ts || 0), 0);
+  }
+
+  // Start polling for new messages every 3s using ?since=<timestamp>
+  _dmPollTimer = setInterval(() => pollDMMessages(friendId), 3000);
+}
+
+async function pollDMMessages(friendId){
+  // Stop if user switched to a different friend
+  if(_dmFriendId !== friendId){ clearInterval(_dmPollTimer); return; }
+  // Don't poll if page not active
+  if(!document.getElementById('page-dmchat')?.classList.contains('active')) return;
+
+  try{
+    const fresh = await fetch('/api/chat/dm/'+friendId+'?since='+_dmLastTs).then(r=>r.json()).catch(()=>[]);
+    if(!fresh.length) return;
+    // Update last timestamp
+    _dmLastTs = fresh.reduce((max, m) => Math.max(max, m.ts || 0), _dmLastTs);
+    const el = document.getElementById('dmMessages');
+    if(el) appendChatMessages(el, fresh, '{{ user.id }}');
+  }catch(e){}
+}
+
+async function sendDM(){
+  const inp  = document.getElementById('dmChatInput');
+  const text = inp?.value.trim();
+  if(!text || !_dmFriendId) return;
+  inp.value = '';
+
+  const d = await fetch('/api/chat/dm/'+_dmFriendId,{
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({text})
+  }).then(r=>r.json()).catch(()=>({}));
+
+  if(d.message){
+    // Update timestamp so next poll doesn't re-show this message
+    _dmLastTs = Math.max(_dmLastTs, d.message.ts || 0);
+    const el = document.getElementById('dmMessages');
+    if(el) appendChatMessages(el, [d.message], '{{ user.id }}');
+  }
+}
+
+// ── Shared chat render helpers ──────────────────────────────────────────────
+function buildBubble(msg, myId){
+  const isMe = String(msg.user_id||msg.sender_id) === String(myId) || msg.is_me === true;
+  const avSrc = msg.avatar_url || msg.sender_av;
+  const av    = avSrc
+    ? `<img src="${avSrc}" style="width:100%;height:100%;object-fit:cover"/>`
+    : ((msg.display_name||msg.sender_name||'?')[0].toUpperCase());
+  const name  = msg.display_name || msg.sender_name || '';
+  const text  = (msg.text||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const ts    = msg.created_at || '';
+  return `<div class="chat-bubble ${isMe?'me':''}">
+    <div class="chat-av">${av}</div>
+    <div class="chat-content">
+      <div class="chat-name">${isMe?'You':name}${msg.username?' · @'+msg.username:''}</div>
+      <div class="chat-text">${text}</div>
+      <div class="chat-ts">${ts}</div>
+    </div>
+  </div>`;
+}
+
+function renderChatMessages(el, msgs, myId, scroll){
+  el.innerHTML = msgs.map(m=>buildBubble(m,myId)).join('');
+  if(scroll) setTimeout(()=>{ el.scrollTop = el.scrollHeight; }, 50);
+}
+
+function appendChatMessages(el, msgs, myId){
+  const atBottom = (el.scrollHeight - el.scrollTop - el.clientHeight) < 80;
+  // Remove "no messages" placeholder if present
+  const placeholder = el.querySelector('[data-placeholder]');
+  if(placeholder) placeholder.remove();
+  msgs.forEach(m => el.insertAdjacentHTML('beforeend', buildBubble(m, myId)));
+  if(atBottom) el.scrollTop = el.scrollHeight;
+}
+
+// Stop/resume polling on tab visibility change
+document.addEventListener('visibilitychange', ()=>{
+  if(document.hidden){
+    clearInterval(_gcPollTimer);
+    clearInterval(_dmPollTimer);
+  } else {
+    if(document.getElementById('page-globalchat')?.classList.contains('active')) initGlobalChat();
+    if(document.getElementById('page-dmchat')?.classList.contains('active') && _dmFriendId){
+      // Resume poll without full reload
+      clearInterval(_dmPollTimer);
+      _dmPollTimer = setInterval(() => pollDMMessages(_dmFriendId), 3000);
+    }
+  }
+});
+
+// ═══ CHALLENGE INVITE SYSTEM ═══════════════════════════════════════════════
+let _currentInviteChallengeId = null;
+let _inviteFriends = [];
+
+async function openInviteModal(challengeId){
+  _currentInviteChallengeId = challengeId;
+  document.getElementById('inviteIdentifier').value = '';
+  document.getElementById('inviteResult').textContent = '';
+  document.getElementById('inviteOverlay').classList.add('open');
+  // Load friends list
+  _inviteFriends = await fetch('/api/friends/list').then(r=>r.json()).catch(()=>[]);
+  renderInviteFriends('');
+  loadChallengeInvites(challengeId);
+}
+
+function renderInviteFriends(query){
+  const el = document.getElementById('inviteFriendsList');
+  if(!el) return;
+  const filtered = query
+    ? _inviteFriends.filter(f=>
+        f.display_name.toLowerCase().includes(query.toLowerCase()) ||
+        f.username.toLowerCase().includes(query.toLowerCase()) ||
+        f.email.toLowerCase().includes(query.toLowerCase()))
+    : _inviteFriends;
+  if(!filtered.length){
+    el.innerHTML=`<div style="padding:10px 0;color:var(--muted);font-family:'DM Mono',monospace;font-size:11px">${query?'No match':'No friends yet — add friends from Social!'}</div>`;
+    return;
+  }
+  el.innerHTML = filtered.map(f=>{
+    const av = f.avatar_url?`<img src="${f.avatar_url}" style="width:100%;height:100%;object-fit:cover"/>`:(f.display_name||'?')[0].toUpperCase();
+    return`<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--surface2);border-radius:10px;margin-bottom:6px">
+      <div style="width:32px;height:32px;border-radius:50%;background:var(--lime);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:var(--bg);overflow:hidden;flex-shrink:0">${av}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;font-weight:600">${f.display_name}</div>
+        <div style="font-size:9px;color:var(--muted);font-family:'DM Mono',monospace">@${f.username}</div>
+      </div>
+      <button onclick="quickInvite('${f.username}')" style="padding:5px 12px;background:var(--lime-dim);border:1px solid rgba(200,255,0,.2);border-radius:8px;color:var(--lime);font-size:11px;font-weight:600;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;white-space:nowrap">Invite</button>
+    </div>`;
+  }).join('');
+}
+
+async function quickInvite(username){
+  document.getElementById('inviteIdentifier').value = username;
+  await sendInvite();
+}
+
+async function loadChallengeInvites(id){
+  const list = document.getElementById('inviteList');
+  if(!list) return;
+  try{
+    const data = await fetch('/api/challenges/'+id+'/invites').then(r=>r.json());
+    if(!data.length){ list.innerHTML='<div style="color:var(--muted);font-size:11px">No invites sent yet</div>'; return; }
+    const statusColor = {pending:'#fbbf24', accepted:'#34d399', declined:'#f87171'};
+    list.innerHTML = data.map(i=>`
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--surface2);border-radius:9px">
+        <span style="font-size:12px;font-weight:600;flex:1">${i.user}</span>
+        <span style="font-family:'DM Mono',monospace;font-size:9px;padding:2px 8px;border-radius:99px;background:${statusColor[i.status]||'var(--muted)'}22;border:1px solid ${statusColor[i.status]||'var(--muted)'}44;color:${statusColor[i.status]||'var(--muted)'}">${i.status}</span>
+      </div>`).join('');
+  }catch(e){ list.innerHTML=''; }
+}
+
+async function sendInvite(){
+  const identifier = document.getElementById('inviteIdentifier').value.trim();
+  const resultEl   = document.getElementById('inviteResult');
+  if(!identifier){ resultEl.style.color='#f87171'; resultEl.textContent='Enter a username or email'; return; }
+  resultEl.style.color='var(--muted)'; resultEl.textContent='Sending…';
+  try{
+    const d = await fetch('/api/challenges/'+_currentInviteChallengeId+'/invite',{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({identifier})
+    }).then(r=>r.json());
+    if(d.error){ resultEl.style.color='#f87171'; resultEl.textContent='✗ '+d.error; return; }
+    resultEl.style.color='#34d399';
+    resultEl.textContent='✓ Invite sent to '+d.invited+'!';
+    document.getElementById('inviteIdentifier').value='';
+    loadChallengeInvites(_currentInviteChallengeId);
+    renderInviteFriends('');
+  }catch(e){ resultEl.style.color='#f87171'; resultEl.textContent='Something went wrong'; }
+}
+
+async function checkPendingInvites(){
+  try{
+    const data = await fetch('/api/challenges/my-invites').then(r=>r.json());
+    if(!data.length) return;
+    // Show badge on challenges nav
+    document.querySelectorAll('.nav-item').forEach(n=>{
+      if(n.textContent.includes('Challenges') && !n.querySelector('.invite-badge')){
+        const b = document.createElement('span');
+        b.className='invite-badge';
+        b.textContent=data.length;
+        n.appendChild(b);
+      }
+    });
+    // Populate pending invites modal
+    const list = document.getElementById('pendingInvitesList');
+    if(list){
+      list.innerHTML = data.map(inv=>`
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px 16px">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+            <span style="font-size:22px">${inv.challenge_icon}</span>
+            <div>
+              <div style="font-size:13px;font-weight:700">${inv.challenge_title}</div>
+              <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace">from ${inv.invited_by}</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button onclick="respondInvite(${inv.challenge_id},'accept',this)" style="flex:1;padding:8px;background:var(--lime);border:none;border-radius:8px;color:var(--bg);font-size:12px;font-weight:700;cursor:pointer">✓ Join</button>
+            <button onclick="respondInvite(${inv.challenge_id},'decline',this)" style="flex:1;padding:8px;background:var(--surface3);border:1px solid var(--border2);border-radius:8px;color:var(--text2);font-size:12px;font-weight:600;cursor:pointer">✗ Decline</button>
+          </div>
+        </div>`).join('');
+      document.getElementById('pendingInvitesOverlay').classList.add('open');
+    }
+  }catch(e){}
+}
+
+async function respondInvite(challengeId, action, btn){
+  const endpoint = action==='accept'
+    ? '/api/challenges/'+challengeId+'/join'
+    : '/api/challenges/'+challengeId+'/decline';
+  await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+  const card = btn.closest('div[style*="background:var(--surface2)"]');
+  if(card) card.innerHTML=`<div style="text-align:center;padding:8px;font-size:12px;color:${action==='accept'?'#34d399':'var(--muted)'}">${action==='accept'?'✓ Joined!':'Declined'}</div>`;
+  if(action==='accept'){ showToast('⚔️ Joined the challenge!','#c8ff00'); loadChallenges(); }
+}
+
+// ═══ CHALLENGES — patched with invite button ════════════════════════════════
+async function loadChallenges(){
+  const el=document.getElementById('challengesContent');if(!el)return;
+  el.innerHTML='<div style="display:flex;align-items:center;gap:10px;padding:36px;color:var(--muted);font-family:\'DM Mono\',monospace;font-size:11px"><div class="spin"></div>Loading…</div>';
+  const challenges=await fetch('/api/challenges').then(r=>r.json()).catch(()=>[]);
+  if(!challenges.length){el.innerHTML='<div style="text-align:center;padding:40px;color:var(--muted);font-family:\'DM Mono\',monospace"><div style="font-size:36px;margin-bottom:10px">⚔️</div>No challenges yet — create the first one!</div>';return;}
+  el.innerHTML=challenges.map(ch=>{
+    const sc={active:'status-active',expired:'status-expired',complete:'status-complete'}[ch.status]||'status-active';
+    const partsHTML=ch.participants.slice(0,5).map((p,i)=>{
+      const av=p.avatar_url?`<img src="${p.avatar_url}" style="width:100%;height:100%;object-fit:cover"/>`:(p.display_name||'?')[0].toUpperCase();
+      return`<div class="ch-part ${i===0&&ch.participants.length>1?'leader':''}"><div class="ch-part-av">${av}</div><span style="font-size:12px;font-weight:${p.is_me?700:400}">${p.display_name.split(' ')[0]}</span><span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--lime)">${p.logs}/${ch.duration_days}</span></div>`;
+    }).join('');
+    const actionBtn=ch.im_in
+      ?(ch.status==='active'?`<button onclick="logChallenge(${ch.id})" style="padding:8px 18px;background:var(--lime);border:none;border-radius:9px;color:var(--bg);font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation">✓ Log Today</button>`:'<span style="font-family:\'DM Mono\',monospace;font-size:10px;color:var(--muted)">Ended</span>')
+      :`<button onclick="joinChallenge(${ch.id})" style="padding:8px 18px;background:var(--lime-dim);border:1px solid rgba(200,255,0,.2);border-radius:9px;color:var(--lime);font-size:12px;font-weight:600;cursor:pointer;touch-action:manipulation">+ Join</button>`;
+    const inviteBtn=ch.im_in?`<button onclick="openInviteModal(${ch.id})" style="padding:8px 14px;background:var(--surface2);border:1px solid var(--border2);border-radius:9px;color:var(--text2);font-size:11px;font-weight:500;cursor:pointer;touch-action:manipulation">📨 Invite</button>`:'';
+    return`<div class="ch-card"><div class="ch-header"><div class="ch-ico">${ch.habit_icon}</div><div style="flex:1"><div class="ch-title">${ch.title}</div><div class="ch-meta">${ch.habit_name} · ${ch.duration_days} days · ${ch.days_left}d left · ${ch.participant_count} joined</div></div><span class="status-pill ${sc}">${ch.status}</span></div>${ch.description?`<div style="color:var(--text2);font-size:12px;margin-bottom:12px">${ch.description}</div>`:''}<div class="ch-participants">${partsHTML}</div><div class="ch-actions" style="gap:8px;display:flex;flex-wrap:wrap">${actionBtn}${inviteBtn}</div></div>`;
+  }).join('');
+}
+
+// ═══ PROFILE & SECURITY PAGE ═══════════════════════════════════════════════
+async function loadProfilePage(){
+  const el = document.getElementById('profileContent');
+  if(!el) return;
+  el.innerHTML='<div style="display:flex;align-items:center;gap:10px;padding:40px;color:var(--muted);font-family:\'DM Mono\',monospace;font-size:11px"><div class="spin"></div>Loading…</div>';
+  const info = await fetch('/auth/api/account-info').then(r=>r.json()).catch(()=>null);
+  if(!info){ el.innerHTML='<div style="padding:40px;color:var(--muted)">Could not load account info.</div>'; return; }
+
+  const hasPass  = info.has_password;
+  const hasGoogle= info.has_google;
+
+  el.innerHTML=`
+    <!-- Account Info Card -->
+    <div class="sec-card">
+      <div class="sec-title">👤 Account</div>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+        <div style="width:48px;height:48px;border-radius:50%;background:var(--lime);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:var(--bg);flex-shrink:0">${(info.display_name||'?')[0].toUpperCase()}</div>
+        <div>
+          <div style="font-weight:700;font-size:15px">${info.display_name}</div>
+          <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)">${info.email}</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        ${hasGoogle?'<span class="sec-badge set">🔗 Google Connected</span>':''}
+        <span class="sec-badge ${hasPass?'set':'notset'}">${hasPass?'🔒 Password Set':'⚠️ No Password'}</span>
+      </div>
+      ${!hasPass&&hasGoogle?'<div style="margin-top:12px;padding:10px 14px;background:rgba(249,115,22,.08);border:1px solid rgba(249,115,22,.2);border-radius:9px;font-size:12px;color:#f97316">You signed up with Google. Set a password below so you can also log in with your email.</div>':''}
+    </div>
+
+    <!-- Password Card -->
+    <div class="sec-card">
+      <div class="sec-title">${hasPass?'🔑 Change Password':'🔑 Set a Password'}<span class="sec-badge ${hasPass?'set':'notset'}">${hasPass?'Set':'Not set'}</span></div>
+
+      ${hasPass?`
+      <div class="fgroup" style="margin-bottom:12px">
+        <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:6px">Current Password</label>
+        <input type="password" id="secCurrent" placeholder="Your current password"
+          style="width:100%;background:var(--surface2);border:1.5px solid var(--border2);color:var(--text);border-radius:9px;padding:10px 14px;font-size:13px;outline:none;font-family:'DM Sans',sans-serif;box-sizing:border-box"/>
+      </div>`:''}
+
+      <div class="fgroup" style="margin-bottom:12px">
+        <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:6px">New Password</label>
+        <input type="password" id="secNew" placeholder="At least 8 characters"
+          style="width:100%;background:var(--surface2);border:1.5px solid var(--border2);color:var(--text);border-radius:9px;padding:10px 14px;font-size:13px;outline:none;font-family:'DM Sans',sans-serif;box-sizing:border-box"/>
+      </div>
+      <div class="fgroup" style="margin-bottom:16px">
+        <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:6px">Confirm New Password</label>
+        <input type="password" id="secConfirm" placeholder="Repeat new password"
+          style="width:100%;background:var(--surface2);border:1.5px solid var(--border2);color:var(--text);border-radius:9px;padding:10px 14px;font-size:13px;outline:none;font-family:'DM Sans',sans-serif;box-sizing:border-box"/>
+      </div>
+      <div id="secMsg" style="font-family:'DM Mono',monospace;font-size:11px;min-height:16px;margin-bottom:12px"></div>
+      <button onclick="savePassword(${hasPass})"
+        style="padding:11px 24px;background:var(--lime);border:none;border-radius:10px;color:var(--bg);font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;-webkit-tap-highlight-color:transparent">
+        ${hasPass?'Update Password':'Set Password'}
+      </button>
+    </div>
+
+    <!-- Forgot / Reset by Email Card -->
+    <div class="sec-card" style="grid-column:1/-1">
+      <div class="sec-title">📧 Forgot Your Password?</div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.6">
+        Send a one-time temporary password to <strong>${info.email}</strong>. Use it to log in, then set a permanent password above.
+      </p>
+      <div id="forgotSecMsg" style="font-family:'DM Mono',monospace;font-size:11px;min-height:16px;margin-bottom:10px"></div>
+      <button onclick="sendForgotFromProfile('${info.email}')"
+        style="padding:10px 22px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;color:var(--text);font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation;-webkit-tap-highlight-color:transparent">
+        📨 Send Temporary Password to My Email
+      </button>
+    </div>
+  `;
+}
+
+async function sendForgotFromProfile(email){
+  const msgEl = document.getElementById('forgotSecMsg');
+  if(msgEl){ msgEl.style.color='var(--muted)'; msgEl.textContent='Sending…'; }
+  try{
+    const d = await fetch('/auth/api/forgot',{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({email})
+    }).then(r=>r.json());
+    if(msgEl){ msgEl.style.color='#34d399'; msgEl.textContent='✓ Temporary password sent to '+email+'!'; }
+    showToast('📨 Check your email!','#c8ff00');
+  }catch(e){
+    if(msgEl){ msgEl.style.color='#f87171'; msgEl.textContent='Something went wrong. Try again.'; }
+  }
+}
+
+async function savePassword(requiresCurrent){
+  const newPwd   = document.getElementById('secNew')?.value||'';
+  const confirm  = document.getElementById('secConfirm')?.value||'';
+  const currEl   = document.getElementById('secCurrent');
+  const msgEl    = document.getElementById('secMsg');
+  if(newPwd.length<8){ msgEl.style.color='#f87171'; msgEl.textContent='Password must be at least 8 characters'; return; }
+  if(newPwd!==confirm){ msgEl.style.color='#f87171'; msgEl.textContent='Passwords do not match'; return; }
+  const body={new_password:newPwd};
+  if(requiresCurrent&&currEl) body.current_password=currEl.value;
+  msgEl.style.color='var(--muted)'; msgEl.textContent='Saving…';
+  try{
+    const d=await fetch('/auth/api/add-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json());
+    if(d.error){ msgEl.style.color='#f87171'; msgEl.textContent='✗ '+d.error; return; }
+    msgEl.style.color='#34d399'; msgEl.textContent='✓ Password saved successfully!';
+    showToast('🔒 Password updated!','#c8ff00');
+    setTimeout(()=>loadProfilePage(), 1200);
+  }catch(e){ msgEl.style.color='#f87171'; msgEl.textContent='Something went wrong'; }
+}
+
+// ═══ SUBSCRIPTION & PRICING ════════════════════════════════════════════════
+let _pricingPlan = 'monthly'; // toggle state
+
+function updateUpgradeNav(){
+  const navItem = document.getElementById('upgradeNavItem');
+  if(!navItem) return;
+  if(_sub.is_premium){
+    navItem.style.display = 'none'; // hide upgrade nav when premium
+  } else {
+    navItem.style.display = 'flex';
+  }
+}
+
+async function loadUpgradePage(){
+  const el = document.getElementById('upgradeContent');
+  if(!el) return;
+
+  // Refresh subscription state
+  try{
+    const d = await fetch('/api/subscription').then(r=>r.json());
+    _sub = d;
+  }catch(e){}
+
+  if(_sub.is_premium){
+    const planLabel = _sub.plan==='yearly'?'Yearly':'Monthly';
+    el.innerHTML=`
+      <div style="max-width:480px;margin:0 auto;text-align:center;padding:20px">
+        <div style="font-size:48px;margin-bottom:12px">🌟</div>
+        <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;margin-bottom:8px">You're on Premium ${planLabel}!</div>
+        <div style="color:var(--text2);font-size:13px;margin-bottom:20px">
+          ${_sub.days_left!=null?`Expires in <strong>${_sub.days_left} days</strong>`:'Active'}
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:20px;text-align:left">
+          <div style="font-weight:700;margin-bottom:10px">Your Premium benefits:</div>
+          ${['✅ Unlimited habits','✅ Advanced analytics','✅ Full streak history','✅ Habit challenges & invites','✅ Priority support'].map(f=>`<div style="padding:6px 0;font-size:13px;border-bottom:1px solid var(--border)">${f}</div>`).join('')}
+        </div>
+        <button onclick="cancelSub()" style="padding:10px 24px;background:transparent;border:1px solid rgba(248,113,113,.3);border-radius:10px;color:#f87171;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif">Cancel Subscription</button>
+      </div>`;
+    return;
+  }
+
+  el.innerHTML=`
+    <div class="plan-toggle">
+      <button class="ptog-btn ${_pricingPlan==='monthly'?'active':''}" onclick="setPricingPlan('monthly')">Monthly</button>
+      <button class="ptog-btn ${_pricingPlan==='yearly'?'active':''}" onclick="setPricingPlan('yearly')">Yearly</button>
+      <span class="ptog-save">Save 14%</span>
+    </div>
+    <div class="plans-grid">
+
+      <!-- FREE CARD -->
+      <div class="plan-card">
+        <div class="plan-name">🆓 Free</div>
+        <div class="plan-price">₹0<span> / forever</span></div>
+        <ul class="plan-features">
+          <li>Track up to 5 habits</li>
+          <li>Basic statistics</li>
+          <li>Daily quests</li>
+          <li>Global & friends chat</li>
+          <li class="no">Advanced analytics</li>
+          <li class="no">Unlimited habits</li>
+          <li class="no">Full streak history</li>
+        </ul>
+        <button class="plan-btn free" disabled>Current Plan</button>
+      </div>
+
+      <!-- PREMIUM CARD -->
+      <div class="plan-card premium">
+        <div class="plan-badge">⭐ MOST POPULAR</div>
+        <div class="plan-name">💎 Premium</div>
+        <div class="plan-price" id="planPriceDisplay">
+          ${_pricingPlan==='monthly'?'₹29<span> / month</span>':'₹299<span> / year</span>'}
+        </div>
+        <ul class="plan-features">
+          <li>Unlimited habits</li>
+          <li>Advanced analytics & insights</li>
+          <li>Full streak history & heatmap</li>
+          <li>Habit challenges & invites</li>
+          <li>Mood tracking & correlations</li>
+          <li>Priority support</li>
+          <li>All future features</li>
+        </ul>
+        <button class="plan-btn paid" id="payBtn" onclick="startPayment()">
+          Upgrade — ${_pricingPlan==='monthly'?'₹29/mo':'₹299/yr'}
+        </button>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:16px;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted)">
+      Secure payment via Razorpay · Cancel anytime · Instant activation
+    </div>
+  `;
+}
+
+function setPricingPlan(plan){
+  _pricingPlan = plan;
+  // Update toggle buttons
+  document.querySelectorAll('.ptog-btn').forEach(b=>{
+    b.classList.toggle('active', b.textContent.toLowerCase()===plan);
+  });
+  // Update price display
+  const priceEl = document.getElementById('planPriceDisplay');
+  if(priceEl) priceEl.innerHTML = plan==='monthly'?'₹29<span> / month</span>':'₹299<span> / year</span>';
+  const payBtn = document.getElementById('payBtn');
+  if(payBtn) payBtn.textContent = `Upgrade — ${plan==='monthly'?'₹29/mo':'₹299/yr'}`;
+}
+
+async function startPayment(){
+  const btn = document.getElementById('payBtn');
+  if(btn){ btn.disabled=true; btn.textContent='Creating order…'; }
+
+  try{
+    const order = await fetch('/api/subscription/order',{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({plan: _pricingPlan})
+    }).then(r=>r.json());
+
+    if(order.error){ showToast('❌ '+order.error,'#f87171'); if(btn){btn.disabled=false;btn.textContent=`Upgrade — ${_pricingPlan==='monthly'?'₹29/mo':'₹299/yr'}`;} return; }
+
+    const options = {
+      key:          order.key_id,
+      amount:       order.amount,
+      currency:     order.currency,
+      name:         'HabitFlow',
+      description:  _pricingPlan==='monthly'?'Premium Monthly — ₹29':'Premium Yearly — ₹299',
+      image:        '',
+      order_id:     order.order_id,
+      prefill: {
+        name:    order.user_name,
+        email:   order.user_email,
+        contact: '',           // leave blank — user fills in
+        method:  'upi',        // pre-select UPI tab
+      },
+      config: {
+        display: {
+          blocks: {
+            utib: {             // UPI block
+              name:       'Pay via UPI',
+              instruments: [
+                { method: 'upi', flows: ['qr','collect','intent'] },
+              ],
+            },
+            other: {            // Cards / Netbanking / Wallets
+              name:       'Other Payment Methods',
+              instruments: [
+                { method: 'card' },
+                { method: 'netbanking' },
+                { method: 'wallet' },
+              ],
+            },
+          },
+          sequence: ['block.utib', 'block.other'],  // UPI first
+          preferences: {
+            show_default_blocks: false,   // hide default, use our blocks
+          },
+        },
+      },
+      theme:  { color: '#c8ff00', hide_topbar: false },
+      modal: {
+        backdropclose: false,
+        escape:        true,
+        animation:     true,
+        ondismiss: function(){
+          if(btn){ btn.disabled=false; btn.textContent=`Upgrade — ${_pricingPlan==='monthly'?'₹29/mo':'₹299/yr'}`; }
+        },
+      },
+      handler: async function(response){
+        // Payment successful — verify on backend
+        const verify = await fetch('/api/subscription/verify',{
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_order_id:   response.razorpay_order_id,
+            razorpay_signature:  response.razorpay_signature,
+            plan:                _pricingPlan,
+          })
+        }).then(r=>r.json());
+
+        if(verify.ok){
+          _sub = verify.subscription;
+          showToast('🎉 Welcome to Premium!','#c8ff00');
+          updateUpgradeNav();
+          loadUpgradePage();
+          await loadAll();
+        } else {
+          showToast('❌ Payment verification failed','#f87171');
+        }
+      },
+    };
+
+    if(typeof Razorpay !== 'undefined'){
+      const rzp = new Razorpay(options);
+      rzp.open();
+    } else {
+      // Razorpay script not loaded (dev/offline) — simulate success
+      showToast('⚠️ Razorpay not loaded (test mode)','#fbbf24');
+      if(btn){ btn.disabled=false; btn.textContent=`Upgrade — ${_pricingPlan==='monthly'?'₹29/mo':'₹299/yr'}`; }
+    }
+  }catch(e){
+    showToast('Something went wrong','#f87171');
+    if(btn){ btn.disabled=false; btn.textContent=`Upgrade — ${_pricingPlan==='monthly'?'₹29/mo':'₹299/yr'}`; }
+  }
+}
+
+async function cancelSub(){
+  if(!confirm('Cancel your Premium subscription? You will stay on Free plan.')) return;
+  await fetch('/api/subscription/cancel',{method:'POST'});
+  _sub = {plan:'free',is_premium:false,habit_limit:5};
+  showToast('Subscription cancelled','#a0a0c0');
+  updateUpgradeNav();
+  loadUpgradePage();
+  loadAll();
+}
 
 </script>
 
@@ -1513,6 +2419,43 @@ switchPage=function(page,el){
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;max-height:360px;overflow-y:auto" id="tmplGrid"></div>
     <div class="modal-actions">
       <button class="mbtn mbtn-s" onclick="closeOverlay('templateOverlay')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Invite to Challenge Modal -->
+<div class="overlay" id="inviteOverlay">
+  <div class="modal-box" style="max-width:500px">
+    <h3>📨 Invite to Challenge</h3>
+    <!-- Friends list -->
+    <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Your Friends</div>
+    <input type="text" id="inviteSearchInput" placeholder="Search friends by name or @username…"
+      oninput="renderInviteFriends(this.value)"
+      style="width:100%;background:var(--surface2);border:1.5px solid var(--border2);color:var(--text);border-radius:9px;padding:9px 14px;font-size:12px;outline:none;font-family:'DM Sans',sans-serif;margin-bottom:10px"/>
+    <div id="inviteFriendsList" style="max-height:200px;overflow-y:auto;margin-bottom:14px"></div>
+    <!-- Manual entry -->
+    <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Or enter username / email</div>
+    <div style="display:flex;gap:8px;margin-bottom:6px">
+      <input type="text" id="inviteIdentifier" placeholder="@username or email@example.com" style="flex:1;background:var(--surface2);border:1.5px solid var(--border2);color:var(--text);border-radius:9px;padding:9px 14px;font-size:12px;outline:none;font-family:'DM Sans',sans-serif"/>
+      <button onclick="sendInvite()" style="padding:9px 18px;background:var(--lime);border:none;border-radius:9px;color:var(--bg);font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent">Send</button>
+    </div>
+    <div id="inviteResult" style="font-family:'DM Mono',monospace;font-size:11px;min-height:16px;margin-bottom:12px"></div>
+    <!-- Sent invites -->
+    <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Sent Invites</div>
+    <div id="inviteList" style="display:flex;flex-direction:column;gap:6px;max-height:130px;overflow-y:auto"></div>
+    <div class="modal-actions" style="margin-top:16px">
+      <button class="mbtn mbtn-s" onclick="closeOverlay('inviteOverlay')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Pending Invites notification modal -->
+<div class="overlay" id="pendingInvitesOverlay">
+  <div class="modal-box">
+    <h3>⚔️ Challenge Invites</h3>
+    <div id="pendingInvitesList" style="display:flex;flex-direction:column;gap:10px"></div>
+    <div class="modal-actions">
+      <button class="mbtn mbtn-s" onclick="closeOverlay('pendingInvitesOverlay')">Close</button>
     </div>
   </div>
 </div>

@@ -19,6 +19,9 @@ urlpatterns = [
     path('api/reset-password',         views.api_reset_password, name='api_reset_password'),
     path('api/resend-verification',    views.resend_verification,name='resend_verification'),
 
+    path('api/add-password',  views.api_add_password,  name='api_add_password'),
+    path('api/account-info',   views.api_account_info,  name='api_account_info'),
+
     # Google OAuth
     path('google/',                    views.google_login,       name='google_login'),
     path('google/callback/',           views.google_callback,    name='google_callback'),

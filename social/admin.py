@@ -71,3 +71,22 @@ class CommentAdmin(admin.ModelAdmin):
     def short_text(self, obj):
         return obj.text[:60] + ('…' if len(obj.text) > 60 else '')
     short_text.short_description = 'Comment'
+
+from .models import GlobalMessage, DirectMessage
+
+@admin.register(GlobalMessage)
+class GlobalMessageAdmin(admin.ModelAdmin):
+    list_display  = ('user','short_text','created_at')
+    search_fields = ('user__email','text')
+    ordering      = ('-created_at',)
+    def short_text(self, obj): return obj.text[:60]
+    short_text.short_description = 'Message'
+
+@admin.register(DirectMessage)
+class DirectMessageAdmin(admin.ModelAdmin):
+    list_display  = ('sender','recipient','short_text','read','created_at')
+    search_fields = ('sender__email','recipient__email','text')
+    list_filter   = ('read',)
+    ordering      = ('-created_at',)
+    def short_text(self, obj): return obj.text[:60]
+    short_text.short_description = 'Message'

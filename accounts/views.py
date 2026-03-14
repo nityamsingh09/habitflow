@@ -206,40 +206,43 @@ def api_forgot(request):
     try:
         user = User.objects.get(email=email)
     except User.DoesNotExist:
-        # Don't reveal existence
-        return JsonResponse({'ok': True})
+        return JsonResponse({'ok': True})  # don't reveal existence
 
-    token = PasswordResetToken.objects.create(
-        user=user,
-        expires_at=timezone.now() + timedelta(hours=2),
-    )
-    link = request.build_absolute_uri(f'/auth/reset-password/{token.token}/')
+    # Generate a random 10-char temp password
+    import random, string
+    chars    = string.ascii_letters + string.digits + '!@#$'
+    temp_pwd = ''.join(random.choices(chars, k=10))
+
+    user.set_password(temp_pwd)
+    user.save()
+
     send_mail(
-        subject='Reset your HabitFlow password',
-        message='',
+        subject='🔑 Your HabitFlow temporary password',
+        message=f'Your temporary password is: {temp_pwd}\n\nLog in and change it from Profile → Security.',
         from_email=settings.DEFAULT_FROM_EMAIL,
         recipient_list=[user.email],
         html_message=f"""
         <div style="font-family:sans-serif;max-width:480px;margin:0 auto;background:#080810;color:#f0f0fa;padding:40px;border-radius:16px;border:1px solid #252538">
-          <div style="text-align:center;margin-bottom:32px">
+          <div style="text-align:center;margin-bottom:28px">
             <div style="display:inline-block;background:#c8ff00;border-radius:10px;padding:10px 20px">
               <span style="font-size:18px;font-weight:800;color:#080810">HabitFlow</span>
             </div>
           </div>
-          <h2 style="color:#c8ff00;font-size:24px;margin-bottom:12px">Reset your password</h2>
-          <p style="color:#a0a0c0;line-height:1.6;margin-bottom:28px">
+          <div style="text-align:center;font-size:40px;margin-bottom:16px">🔑</div>
+          <h2 style="color:#c8ff00;font-size:24px;margin-bottom:12px;text-align:center">Your temporary password</h2>
+          <p style="color:#a0a0c0;line-height:1.6;margin-bottom:20px">
             Hi {user.display_name},<br/><br/>
-            We received a request to reset your password. Click the button below.
-            This link expires in <strong style="color:#f0f0fa">2 hours</strong>.
+            Use this temporary password to log in, then go to <strong style="color:#f0f0fa">Profile → Security</strong> to set a permanent one.
           </p>
-          <a href="{link}" style="display:inline-block;background:#c8ff00;color:#080810;font-weight:700;font-size:15px;padding:14px 32px;border-radius:10px;text-decoration:none">
-            Reset Password
-          </a>
-          <p style="color:#555570;font-size:12px;margin-top:28px">
-            If you didn't request this, ignore this email — your password won't change.
+          <div style="background:#0d0d18;border:2px solid #c8ff00;border-radius:12px;padding:20px;text-align:center;margin-bottom:24px">
+            <div style="font-family:monospace;font-size:26px;font-weight:700;color:#c8ff00;letter-spacing:4px">{temp_pwd}</div>
+          </div>
+          <p style="color:#555570;font-size:12px;text-align:center">
+            If you didn't request this, log in immediately and change your password.
           </p>
         </div>
         """,
+        fail_silently=True,
     )
     return JsonResponse({'ok': True})
 
@@ -349,3 +352,48 @@ def google_callback(request):
 
     auth_login(request, user, backend='django.contrib.auth.backends.ModelBackend')
     return redirect('/')
+
+
+# ── ADD / CHANGE PASSWORD (for profile settings) ───────────────────────────
+
+@csrf_exempt
+def api_add_password(request):
+    """Google OAuth users who have no password can set one here."""
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Login required'}, status=401)
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST only'}, status=405)
+
+    body = json.loads(request.body)
+    new_password = body.get('new_password', '')
+    if len(new_password) < 8:
+        return JsonResponse({'error': 'Password must be at least 8 characters'}, status=400)
+
+    user = request.user
+    if user.has_usable_password():
+        # Already has password — require current password to change
+        current = body.get('current_password', '')
+        if not current:
+            return JsonResponse({'error': 'Current password required to change it'}, status=400)
+        if not user.check_password(current):
+            return JsonResponse({'error': 'Current password is incorrect'}, status=400)
+
+    user.set_password(new_password)
+    user.save()
+    # Re-login so session stays valid after password change
+    from django.contrib.auth import update_session_auth_hash
+    update_session_auth_hash(request, user)
+    return JsonResponse({'ok': True, 'message': 'Password set successfully'})
+
+
+@csrf_exempt
+def api_account_info(request):
+    """Return account info — specifically whether the user has a password set."""
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Login required'}, status=401)
+    return JsonResponse({
+        'has_password':  request.user.has_usable_password(),
+        'has_google':    bool(request.user.google_id),
+        'email':         request.user.email,
+        'display_name':  request.user.display_name,
+    })
