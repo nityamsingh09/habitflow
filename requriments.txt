@@ -1,3 +1,4 @@
+<<<<<<< HEAD:requriments.txt
 absl-py==2.3.1
 aext-assistant @ file:///private/var/folders/nz/j6p8yfhx1mv_0grj5xl4650h0000gp/T/abs_d5fxz3l2ix/croot/aext-assistant_1746560160060/work
 aext-assistant-server @ file:///private/var/folders/nz/j6p8yfhx1mv_0grj5xl4650h0000gp/T/abs_1emcn1_yt0/croot/aext-assistant-server_1746552985810/work
@@ -450,3 +451,10 @@ zict @ file:///Users/builder/cbouss/perseverance-python-buildout/croot/zict_1728
 zipp @ file:///opt/miniconda3/conda-bld/zipp_1763977858517/work
 zope.interface @ file:///opt/miniconda3/conda-bld/zope.interface_1762336927613/work
 zstandard @ file:///opt/miniconda3/conda-bld/zstandard_1758189078532/work
+=======
+Django==5.0.6
+gunicorn==21.2.0
+whitenoise==6.7.0
+django-allauth==65.15.0
+djangorestframework==3.16.1
+>>>>>>> 46a6b90dc9e04987ba6b9ec36785ad5dfdac4611:requrements.txt
