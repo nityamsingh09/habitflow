@@ -1,0 +1,94 @@
+{
+  "habits": [
+    {
+      "id": "meditation",
+      "name": "Meditation",
+      "icon": "\ud83e\uddd8",
+      "category": "Mindfulness",
+      "color": "#a78bfa"
+    },
+    {
+      "id": "gym",
+      "name": "Gym / Workout",
+      "icon": "\ud83d\udcaa",
+      "category": "Fitness",
+      "color": "#34d399"
+    },
+    {
+      "id": "journal",
+      "name": "Daily Journal",
+      "icon": "\ud83d\udcd3",
+      "category": "Reflection",
+      "color": "#fbbf24"
+    },
+    {
+      "id": "dsa",
+      "name": "DSA Practice",
+      "icon": "\ud83e\uddee",
+      "category": "Revision",
+      "color": "#f87171"
+    },
+    {
+      "id": "ds",
+      "name": "Data Structures",
+      "icon": "\ud83d\uddc2\ufe0f",
+      "category": "Revision",
+      "color": "#60a5fa"
+    },
+    {
+      "id": "class",
+      "name": "Class Notes",
+      "icon": "\ud83d\udcda",
+      "category": "Revision",
+      "color": "#fb923c"
+    },
+    {
+      "id": "reading",
+      "name": "Reading",
+      "icon": "\ud83d\udcd6",
+      "category": "Learning",
+      "color": "#e879f9"
+    },
+    {
+      "id": "water",
+      "name": "Drink Water (8 glasses)",
+      "icon": "\ud83d\udca7",
+      "category": "Health",
+      "color": "#38bdf8"
+    },
+    {
+      "id": "sleep",
+      "name": "Sleep 8hrs",
+      "icon": "\ud83d\ude34",
+      "category": "Health",
+      "color": "#818cf8"
+    },
+    {
+      "id": "no_social",
+      "name": "No Social Media",
+      "icon": "\ud83d\udeab",
+      "category": "Mindfulness",
+      "color": "#fb7185"
+    }
+  ],
+  "logs": {
+    "2026-03-10": [
+      "meditation",
+      "gym",
+      "class"
+    ],
+    "2026-03-11": [
+      "meditation",
+      "gym",
+      "reading",
+      "no_social",
+      "sleep",
+      "ds"
+    ],
+    "2026-03-09": [],
+    "2026-03-01": [],
+    "2026-03-02": [],
+    "2026-03-03": []
+  },
+  "custom_habits": []
+}

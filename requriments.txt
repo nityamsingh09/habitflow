@@ -101,6 +101,7 @@ diff-match-patch @ file:///Users/ktietz/demo/mc3/conda-bld/diff-match-patch_1630
 dill @ file:///opt/miniconda3/conda-bld/dill_1760096784777/work
 distributed @ file:///opt/miniconda3/conda-bld/distributed_1763105746476/work
 distro @ file:///Users/builder/cbouss/perseverance-python-buildout/croot/distro_1728591855492/work
+dj-database-url==3.1.2
 Django==6.0.3
 django-allauth==65.15.0
 djangorestframework==3.16.1
@@ -268,6 +269,7 @@ propcache @ file:///private/var/folders/k1/30mswbxs7r1g6zwn8y4fyt500000gp/T/abs_
 Protego @ file:///private/var/folders/k1/30mswbxs7r1g6zwn8y4fyt500000gp/T/abs_417x0vb4sd/croot/protego_1746474581924/work
 protobuf @ file:///private/var/folders/k1/30mswbxs7r1g6zwn8y4fyt500000gp/T/abs_73kluigbu7/croot/protobuf_1742426204819/work/bazel-bin/python/dist/protobuf-5.29.3-cp313-abi3-macosx_11_0_arm64.whl#sha256=e07b26660ea2f25386081d62b3650f5037d5028ca61f604b9a6148c4b9ee9ddf
 psutil @ file:///opt/miniconda3/conda-bld/psutil_1761896323233/work
+psycopg2-binary==2.9.11
 ptyprocess @ file:///opt/miniconda3/conda-bld/ptyprocess_1762424170819/work/dist/ptyprocess-0.7.0-py2.py3-none-any.whl#sha256=3470be7f810474c8a2ecfcd6e02acc6aea8483ab595417fa4e336362a349933e
 pure_eval @ file:///opt/miniconda3/conda-bld/pure_eval_1757067068750/work
 py-cpuinfo @ file:///Users/builder/cbouss/perseverance-python-buildout/croot/py-cpuinfo_1728593043967/work
@@ -435,6 +437,7 @@ websocket-client @ file:///Users/builder/cbouss/perseverance-python-buildout/cro
 Werkzeug @ file:///private/var/folders/k1/30mswbxs7r1g6zwn8y4fyt500000gp/T/abs_87am5fxnsf/croot/werkzeug_1737448721856/work
 whatthepatch @ file:///opt/miniconda3/conda-bld/whatthepatch_1758276655940/work
 wheel==0.45.1
+whitenoise==6.12.0
 widgetsnbextension @ file:///opt/miniconda3/conda-bld/widgetsnbextension_1761556739997/work
 wrapt @ file:///private/var/folders/nz/j6p8yfhx1mv_0grj5xl4650h0000gp/T/abs_30cvf__dq_/croot/wrapt_1736541623359/work
 wurlitzer @ file:///opt/miniconda3/conda-bld/wurlitzer_1756979036322/work

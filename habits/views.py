@@ -10,7 +10,33 @@ from django.views.decorators.http import require_http_methods
 from .models import Habit, HabitLog, Badge, BADGE_DEFINITIONS
 
 
-# ── Auth guard ─────────────────────────────────────────────────────────────
+def _emit_activity(user, habit, event_type, meta=None):
+    """Fire-and-forget: create an ActivityEvent if the habit is public."""
+    try:
+        if not habit.is_public:
+            return
+        from social.models import ActivityEvent
+        ActivityEvent.objects.create(user=user, habit=habit, event_type=event_type, meta=meta or {})
+    except Exception:
+        pass
+
+def _award_xp_for_log(user, habit, streak, new_badges):
+    """Award XP when a habit is logged."""
+    try:
+        from gamification.models import UserXP, XP_PER_LOG, XP_STREAK_BONUS, XP_BADGE_BONUS
+        from gamification.views import check_and_complete_quests
+        xp = UserXP.objects.get_or_create(user=user)[0]
+        xp.add_xp(XP_PER_LOG, f'Logged: {habit.name}')
+        bonus = XP_STREAK_BONUS.get(streak, 0)
+        if bonus:
+            xp.add_xp(bonus, f'Streak milestone: {streak} days on {habit.name}')
+        for _ in new_badges:
+            xp.add_xp(XP_BADGE_BONUS, f'Badge earned on {habit.name}')
+        check_and_complete_quests(user)
+    except Exception:
+        pass
+
+
 
 def login_required_api(view_func):
     @wraps(view_func)
@@ -30,8 +56,6 @@ def login_required_page(view_func):
     return wrapper
 
 
-# ── Page ───────────────────────────────────────────────────────────────────
-
 @login_required_page
 def index(request):
     return render(request, 'habits/index.html', {
@@ -39,8 +63,6 @@ def index(request):
         'show_verified_toast': request.GET.get('verified') == '1',
     })
 
-
-# ── Badge evaluation ────────────────────────────────────────────────────────
 
 def evaluate_badges(habit, logged_dates):
     newly_earned = []
@@ -53,7 +75,7 @@ def evaluate_badges(habit, logged_dates):
         streak += 1
         check -= timedelta(days=1)
 
-    for badge_id, _, _, _, ctype, threshold in BADGE_DEFINITIONS:
+    for badge_id, _, emoji, _, ctype, threshold in BADGE_DEFINITIONS:
         if ctype != 'streak':
             continue
         if streak >= threshold:
@@ -61,8 +83,9 @@ def evaluate_badges(habit, logged_dates):
                                                       defaults={'earned_at': today})
             if created:
                 newly_earned.append(b.to_dict())
+                _emit_activity(habit.user, habit, 'streak', {'streak': streak, 'badge_id': badge_id})
 
-    for badge_id, _, _, _, ctype, threshold in BADGE_DEFINITIONS:
+    for badge_id, _, emoji, _, ctype, threshold in BADGE_DEFINITIONS:
         if ctype != 'total':
             continue
         if total >= threshold:
@@ -70,33 +93,24 @@ def evaluate_badges(habit, logged_dates):
                                                       defaults={'earned_at': today})
             if created:
                 newly_earned.append(b.to_dict())
+                _emit_activity(habit.user, habit, 'badge', {'badge_id': badge_id, 'total': total})
 
     if habit.target_days and habit.target_start:
         target_end = habit.target_start + timedelta(days=habit.target_days - 1)
         window_logs = {d for d in logged_dates if habit.target_start <= d <= target_end}
-        completed_in_window = len(window_logs)
 
-        if completed_in_window >= habit.target_days:
+        if len(window_logs) >= habit.target_days:
             b, created = Badge.objects.get_or_create(
                 badge_id='target_complete', habit=habit,
                 defaults={'earned_at': today, 'extra_data': {'target_days': habit.target_days}}
             )
             if created:
                 newly_earned.append(b.to_dict())
-
-            total_window_days = (min(target_end, today) - habit.target_start).days + 1
-            if completed_in_window >= total_window_days:
-                b, created = Badge.objects.get_or_create(
-                    badge_id='target_perfect', habit=habit,
-                    defaults={'earned_at': today}
-                )
-                if created:
-                    newly_earned.append(b.to_dict())
+                _emit_activity(habit.user, habit, 'target', {'target_days': habit.target_days})
 
             sorted_logs = sorted(window_logs)
             if len(sorted_logs) >= habit.target_days:
-                completion_date = sorted_logs[habit.target_days - 1]
-                days_saved = (target_end - completion_date).days
+                days_saved = (target_end - sorted_logs[habit.target_days - 1]).days
                 if days_saved >= 10:
                     b, created = Badge.objects.get_or_create(
                         badge_id='target_early', habit=habit,
@@ -105,10 +119,16 @@ def evaluate_badges(habit, logged_dates):
                     if created:
                         newly_earned.append(b.to_dict())
 
-    target_complete_count = Badge.objects.filter(
-        badge_id='target_complete',
-        habit__user=habit.user
-    ).count()
+            total_window_days = (min(target_end, today) - habit.target_start).days + 1
+            if len(window_logs) >= total_window_days:
+                b, created = Badge.objects.get_or_create(
+                    badge_id='target_perfect', habit=habit,
+                    defaults={'earned_at': today}
+                )
+                if created:
+                    newly_earned.append(b.to_dict())
+
+    target_complete_count = Badge.objects.filter(badge_id='target_complete', habit__user=habit.user).count()
     if target_complete_count >= 3:
         b, created = Badge.objects.get_or_create(
             badge_id='multi_target', habit=habit,
@@ -120,38 +140,29 @@ def evaluate_badges(habit, logged_dates):
     return newly_earned
 
 
-# ── API: Habits ────────────────────────────────────────────────────────────
-
 @csrf_exempt
 @login_required_api
 @require_http_methods(["GET", "POST"])
 def habits(request):
     if request.method == "GET":
-        result = [h.to_dict() for h in Habit.objects.filter(user=request.user)]
-        return JsonResponse(result, safe=False)
+        return JsonResponse([h.to_dict() for h in Habit.objects.filter(user=request.user)], safe=False)
 
     body = json.loads(request.body)
-    new_id = f"custom_{str(request.user.id).replace('-','')[:8]}_{datetime.now().timestamp()}".replace('.', '_')
-
-    target_days = body.get('target_days')
-    target_start = None
-    if target_days:
+    new_id = f"custom_{str(request.user.id).replace('-','')[:8]}_{datetime.now().timestamp()}".replace('.','_')
+    target_days, target_start = None, None
+    if body.get('target_days'):
         try:
-            target_days = int(target_days)
+            target_days = int(body['target_days'])
             target_start = date.today()
         except (ValueError, TypeError):
-            target_days = None
+            pass
 
     habit = Habit.objects.create(
-        habit_id=new_id,
-        user=request.user,
-        name=body.get('name', ''),
-        icon=body.get('icon', '⭐'),
-        category=body.get('category', 'General'),
-        color=body.get('color', '#c8ff00'),
-        is_default=False,
-        target_days=target_days,
-        target_start=target_start,
+        habit_id=new_id, user=request.user,
+        name=body.get('name',''), icon=body.get('icon','⭐'),
+        category=body.get('category','General'), color=body.get('color','#c8ff00'),
+        is_default=False, is_public=body.get('is_public', True),
+        target_days=target_days, target_start=target_start,
     )
     return JsonResponse(habit.to_dict(), status=201)
 
@@ -170,6 +181,8 @@ def habit_detail(request, habit_id):
         for field in ("name", "icon", "category", "color"):
             if field in updates:
                 setattr(habit, field, updates[field])
+        if 'is_public' in updates:
+            habit.is_public = bool(updates['is_public'])
         if 'target_days' in updates:
             td = updates['target_days']
             if td:
@@ -178,11 +191,9 @@ def habit_detail(request, habit_id):
                     if not habit.target_start:
                         habit.target_start = date.today()
                 except (ValueError, TypeError):
-                    habit.target_days = None
-                    habit.target_start = None
+                    habit.target_days = None; habit.target_start = None
             else:
-                habit.target_days = None
-                habit.target_start = None
+                habit.target_days = None; habit.target_start = None
         habit.save()
         return JsonResponse(habit.to_dict())
 
@@ -190,33 +201,39 @@ def habit_detail(request, habit_id):
     return JsonResponse({"success": True})
 
 
-# ── API: Log ───────────────────────────────────────────────────────────────
-
 @csrf_exempt
 @login_required_api
 @require_http_methods(["POST"])
 def log_habit(request):
-    payload = json.loads(request.body)
+    payload  = json.loads(request.body)
     habit_id = payload["habit_id"]
-    log_date_str = payload.get("date", str(date.today()))
-    log_date = date.fromisoformat(log_date_str)
+    log_date = date.fromisoformat(payload.get("date", str(date.today())))
 
     try:
         habit = Habit.objects.get(habit_id=habit_id, user=request.user)
     except Habit.DoesNotExist:
-        return JsonResponse({"error": "habit not found"}, status=404)
+        return JsonResponse({"error": "not found"}, status=404)
 
     log_entry, created = HabitLog.objects.get_or_create(habit=habit, log_date=log_date)
     if not created:
         log_entry.delete()
-        return JsonResponse({"status": "removed", "date": log_date_str,
-                             "habit_id": habit_id, "new_badges": []})
+        return JsonResponse({"status": "removed", "date": str(log_date), "habit_id": habit_id, "new_badges": []})
+
+    # Emit activity for public habits
+    _emit_activity(request.user, habit, 'log', {
+        'habit_name': habit.name, 'habit_icon': habit.icon, 'habit_color': habit.color
+    })
 
     logged_dates = set(HabitLog.objects.filter(habit=habit).values_list('log_date', flat=True))
-    new_badges = evaluate_badges(habit, logged_dates)
+    new_badges   = evaluate_badges(habit, logged_dates)
 
-    return JsonResponse({"status": "added", "date": log_date_str,
-                         "habit_id": habit_id, "new_badges": new_badges})
+    # Compute streak for XP bonus
+    streak = 0
+    check  = log_date
+    while check in logged_dates:
+        streak += 1; check -= timedelta(days=1)
+    _award_xp_for_log(request.user, habit, streak, new_badges)
+    return JsonResponse({"status": "added", "date": str(log_date), "habit_id": habit_id, "new_badges": new_badges})
 
 
 @login_required_api
@@ -229,75 +246,58 @@ def get_logs(request):
     return JsonResponse(logs)
 
 
-# ── API: Stats ─────────────────────────────────────────────────────────────
-
 @login_required_api
 @require_http_methods(["GET"])
 def get_stats(request):
-    today = date.today()
+    today      = date.today()
     all_habits = Habit.objects.filter(user=request.user)
-
     logs_by_habit = {}
     for entry in HabitLog.objects.select_related('habit').filter(habit__user=request.user):
         logs_by_habit.setdefault(entry.habit.habit_id, set()).add(entry.log_date)
 
     stats = {}
     for habit in all_habits:
-        hid = habit.habit_id
+        hid          = habit.habit_id
         logged_dates = logs_by_habit.get(hid, set())
-        total = len(logged_dates)
-
+        total        = len(logged_dates)
         streak = 0
-        check = today
+        check  = today
         while check in logged_dates:
-            streak += 1
-            check -= timedelta(days=1)
+            streak += 1; check -= timedelta(days=1)
 
-        heatmap = {}
-        for i in range(365):
-            d = today - timedelta(days=i)
-            heatmap[str(d)] = 1 if d in logged_dates else 0
+        heatmap = {str(today - timedelta(days=i)): 1 if (today - timedelta(days=i)) in logged_dates else 0
+                   for i in range(365)}
 
         target_progress = None
         if habit.target_days and habit.target_start:
-            target_end = habit.target_start + timedelta(days=habit.target_days - 1)
+            target_end  = habit.target_start + timedelta(days=habit.target_days - 1)
             window_logs = {d for d in logged_dates if habit.target_start <= d <= target_end}
-            days_remaining = max(0, (target_end - today).days)
             target_progress = {
                 "target_days":    habit.target_days,
                 "target_start":   str(habit.target_start),
                 "target_end":     str(target_end),
                 "completed":      len(window_logs),
-                "days_remaining": days_remaining,
+                "days_remaining": max(0, (target_end - today).days),
                 "is_complete":    len(window_logs) >= habit.target_days,
                 "is_expired":     today > target_end and len(window_logs) < habit.target_days,
             }
-
         stats[hid] = {"streak": streak, "total": total, "heatmap": heatmap, "target_progress": target_progress}
-
     return JsonResponse(stats)
 
-
-# ── API: Today ─────────────────────────────────────────────────────────────
 
 @login_required_api
 @require_http_methods(["GET"])
 def get_today(request):
-    today = date.today()
-    completed = list(
-        HabitLog.objects.filter(log_date=today, habit__user=request.user)
-        .values_list('habit__habit_id', flat=True)
-    )
+    completed = list(HabitLog.objects.filter(
+        log_date=date.today(), habit__user=request.user
+    ).values_list('habit__habit_id', flat=True))
     return JsonResponse(completed, safe=False)
 
-
-# ── API: Badges ─────────────────────────────────────────────────────────────
 
 @login_required_api
 @require_http_methods(["GET"])
 def get_badges(request):
-    badges = list(Badge.objects.select_related('habit').filter(
-        habit__user=request.user).order_by('-earned_at'))
+    badges = Badge.objects.select_related('habit').filter(habit__user=request.user).order_by('-earned_at')
     return JsonResponse([b.to_dict() for b in badges], safe=False)
 
 
@@ -309,14 +309,8 @@ def get_badge_definitions(request):
     ], safe=False)
 
 
-# ── API: Current user ───────────────────────────────────────────────────────
-
 @login_required_api
 @require_http_methods(["GET"])
 def get_me(request):
     u = request.user
-    return JsonResponse({
-        "email":        u.email,
-        "display_name": u.display_name,
-        "avatar_url":   u.avatar_url,
-    })
+    return JsonResponse({"email": u.email, "display_name": u.display_name, "avatar_url": u.avatar_url})

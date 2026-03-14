@@ -71,3 +71,17 @@ class PasswordResetToken(models.Model):
 
     def __str__(self):
         return f"Reset for {self.user.email}"
+
+
+# ── Auto-create social profile on user save ────────────────────────────────
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        try:
+            from social.models import UserProfile
+            UserProfile.objects.get_or_create(user=instance)
+        except Exception:
+            pass  # social app may not be installed yet

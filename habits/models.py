@@ -13,6 +13,7 @@ class Habit(models.Model):
     category     = models.CharField(max_length=100, default='General')
     color        = models.CharField(max_length=20, default='#c8ff00')
     is_default   = models.BooleanField(default=False)
+    is_public    = models.BooleanField(default=True)
     target_days  = models.PositiveIntegerField(null=True, blank=True)
     target_start = models.DateField(null=True, blank=True)
     created_at   = models.DateTimeField(auto_now_add=True)
@@ -26,6 +27,7 @@ class Habit(models.Model):
             "color":        self.color,
             "target_days":  self.target_days,
             "target_start": str(self.target_start) if self.target_start else None,
+            "is_public":    self.is_public,
         }
 
     def __str__(self):
@@ -88,3 +90,5 @@ class Badge(models.Model):
 
     def __str__(self):
         return f"{self.badge_id} — {self.habit.name}"
+
+# Migration 0002 adds is_public field to Habit (done via migration file)
