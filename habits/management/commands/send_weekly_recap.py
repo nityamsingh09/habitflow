@@ -40,10 +40,10 @@ class Command(BaseCommand):
                 if total_week == 0 and total_all == 0:
                     continue  # Skip users with no activity ever
 
-                subject = f"🔥 Your HabitFlow week — {total_week} habits completed"
+                subject = f"🔥 Your HabitFlows week — {total_week} habits completed"
                 body = f"""Hey {user.display_name}!
 
-Here's your HabitFlow weekly recap:
+Here's your HabitFlows weekly recap:
 
 📊 This Week
   • Habits completed: {total_week}
@@ -54,9 +54,9 @@ Here's your HabitFlow weekly recap:
 
 {'Great week! Keep the momentum going 💪' if total_week >= 5 else 'Every habit counts — even one a day makes a difference 🌱'}
 
-Open HabitFlow → https://habitflow.vercel.app
+Open HabitFlows → https://habitflows.vercel.app
 
-— The HabitFlow Team
+— The HabitFlows Team
 """
                 send_mail(subject, body, None, [user.email], fail_silently=True)
                 sent += 1

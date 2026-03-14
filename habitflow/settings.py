@@ -99,7 +99,7 @@ EMAIL_PORT          = 587
 EMAIL_USE_TLS       = True
 EMAIL_HOST_USER     = os.environ.get('EMAIL_HOST_USER', 'habitfloww@gmail.com')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'amol agkr wcvx xjvh')
-DEFAULT_FROM_EMAIL  = f'HabitFlow <{EMAIL_HOST_USER}>'
+DEFAULT_FROM_EMAIL  = f'HabitFlows <{EMAIL_HOST_USER}>'
 
 # ── Google OAuth ──────────────────────────────────────────────────────────────
 GOOGLE_CLIENT_ID     = os.environ.get('GOOGLE_CLIENT_ID',
@@ -108,8 +108,8 @@ GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET',
     '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')
 
 # ── Admin branding ────────────────────────────────────────────────────────────
-ADMIN_SITE_HEADER  = 'HabitFlow Admin'
-ADMIN_SITE_TITLE   = 'HabitFlow'
+ADMIN_SITE_HEADER  = 'HabitFlows Admin'
+ADMIN_SITE_TITLE   = 'HabitFlows'
 ADMIN_INDEX_TITLE  = 'Dashboard'
 
 RAZORPAY_KEY_ID     = 'rzp_test_SR5knhi5sGaNi1'

@@ -200,16 +200,16 @@ def invite_to_challenge(request, challenge_id):
     # Send email notification
     try:
         send_mail(
-            subject=f'⚔️ {request.user.display_name} invited you to a HabitFlow challenge!',
+            subject=f'⚔️ {request.user.display_name} invited you to a HabitFlows challenge!',
             message=(
                 f"Hey {invited_user.display_name}!\n\n"
                 f"{request.user.display_name} has invited you to join:\n\n"
                 f"  ⚔️ {ch.habit_icon} {ch.title}\n"
                 f"  📅 {ch.duration_days}-day challenge\n"
                 f"  📝 {ch.habit_name}\n\n"
-                f"Open HabitFlow to accept or decline:\n"
-                f"https://habitflow.vercel.app\n\n"
-                f"— The HabitFlow Team"
+                f"Open HabitFlows to accept or decline:\n"
+                f"https://habitflows.vercel.app\n\n"
+                f"— The HabitFlows Team"
             ),
             from_email=None,
             recipient_list=[invited_user.email],

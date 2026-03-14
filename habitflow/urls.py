@@ -2,8 +2,8 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 
-admin.site.site_header = 'HabitFlow Admin'
-admin.site.site_title  = 'HabitFlow'
+admin.site.site_header = 'HabitFlows Admin'
+admin.site.site_title  = 'HabitFlows'
 admin.site.index_title = '📊 Dashboard'
 
 urlpatterns = [

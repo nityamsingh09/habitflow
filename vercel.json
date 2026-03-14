@@ -2,7 +2,7 @@
   "version": 2,
   "builds": [
     {
-      "src": "habitflow/wsgi.py",
+      "src": "habitflows/wsgi.py",
       "use": "@vercel/python",
       "config": {
         "maxLambdaSize": "15mb",
@@ -13,11 +13,11 @@
   "routes": [
     {
       "src": "/static/(.*)",
-      "dest": "/habitflow/wsgi.py"
+      "dest": "/habitflows/wsgi.py"
     },
     {
       "src": "/(.*)",
-      "dest": "/habitflow/wsgi.py"
+      "dest": "/habitflows/wsgi.py"
     }
   ]
 }

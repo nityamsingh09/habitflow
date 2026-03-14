@@ -1,11 +1,11 @@
-# Deploying HabitFlow to Vercel
+# Deploying HabitFlows to Vercel
 
 ---
 
 ## Step 1 — Create a free Postgres database (Neon)
 
 1. Go to https://neon.tech and sign up free
-2. Click **New Project** → name it `habitflow`
+2. Click **New Project** → name it `habitflows`
 3. Copy the **Connection string** — looks like:
    ```
    postgresql://nityam:password@ep-xxx.us-east-1.aws.neon.tech/neondb?sslmode=require
@@ -17,10 +17,10 @@
 ## Step 2 — Push code to GitHub
 
 ```bash
-cd habitflow
+cd habitflows
 git init
 git add .
-git commit -m "Initial HabitFlow commit"
+git commit -m "Initial HabitFlows commit"
 ```
 
 Go to https://github.com/new → create a new **private** repo → follow the
@@ -43,7 +43,7 @@ Go to https://github.com/new → create a new **private** repo → follow the
 | `DATABASE_URL` | your Neon connection string from Step 1 |
 | `ALLOWED_HOSTS` | `your-app.vercel.app` (fill in after first deploy) |
 | `DEBUG` | `False` |
-| `EMAIL_HOST_USER` | `habitfloww@gmail.com` |
+| `EMAIL_HOST_USER` | `habitflowsw@gmail.com` |
 | `EMAIL_HOST_PASSWORD` | `amol agkr wcvx xjvh` |
 | `GOOGLE_CLIENT_ID` | `65650647695-dsoilitqu0p95t7ago0t7ijq5vtc07s2.apps.googleusercontent.com` |
 | `GOOGLE_CLIENT_SECRET` | `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` |
@@ -54,7 +54,7 @@ Go to https://github.com/new → create a new **private** repo → follow the
 
 ## Step 4 — Update Google OAuth redirect URI
 
-After your first deploy, Vercel gives you a URL like `https://habitflow-xyz.vercel.app`.
+After your first deploy, Vercel gives you a URL like `https://habitflows-xyz.vercel.app`.
 
 1. Go to https://console.cloud.google.com
 2. **APIs & Services → Credentials → your OAuth Client**
@@ -70,7 +70,7 @@ After your first deploy, Vercel gives you a URL like `https://habitflow-xyz.verc
 
 In Vercel → Settings → Environment Variables, update `ALLOWED_HOSTS`:
 ```
-habitflow-xyz.vercel.app
+habitflows-xyz.vercel.app
 ```
 Then **Redeploy** (Deployments tab → three dots → Redeploy).
 

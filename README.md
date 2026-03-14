@@ -1,4 +1,4 @@
-# HabitFlow — Django + Auth + Google OAuth
+# HabitFlows — Django + Auth + Google OAuth
 
 Full-featured habit tracker with email/password signup, email verification,
 Google OAuth "Continue with Google", password reset, and per-user data isolation.
@@ -53,9 +53,9 @@ GOOGLE_CLIENT_SECRET = 'GOCSPX-xxxx'
 EMAIL_HOST          = 'smtp.gmail.com'
 EMAIL_PORT          = 587
 EMAIL_USE_TLS       = True
-EMAIL_HOST_USER     = 'habitfloww@gmail.com'
+EMAIL_HOST_USER     = 'habitflowsw@gmail.com'
 EMAIL_HOST_PASSWORD = 'amol agkr wcvx xjvh'   # Gmail App Password
-DEFAULT_FROM_EMAIL  = 'HabitFlow <habitfloww@gmail.com>'
+DEFAULT_FROM_EMAIL  = 'HabitFlows <habitflowsw@gmail.com>'
 ```
 
 Make sure "Less secure app access" is OFF and you're using a Gmail **App Password**
@@ -81,11 +81,11 @@ Make sure "Less secure app access" is OFF and you're using a Gmail **App Passwor
 ## Project Structure
 
 ```
-habitflow/
+habitflows/
 ├── manage.py
 ├── db.sqlite3              ← auto-created on migrate
 ├── requirements.txt
-├── habitflow/
+├── habitflows/
 │   ├── settings.py         ← email + Google OAuth config here
 │   └── urls.py
 ├── accounts/               ← NEW: auth app

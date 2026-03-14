@@ -1,6 +1,6 @@
 {
-  "name": "HabitFlow",
-  "short_name": "HabitFlow",
+  "name": "HabitFlows",
+  "short_name": "HabitFlows",
   "description": "Build habits, track streaks, compete with friends",
   "start_url": "/",
   "display": "standalone",

@@ -28,7 +28,7 @@ def _send_verification_email(user, request):
     )
     link = request.build_absolute_uri(f'/auth/verify-email/{token.token}/')
     send_mail(
-        subject='Verify your HabitFlow email',
+        subject='Verify your HabitFlows email',
         message='',
         from_email=settings.DEFAULT_FROM_EMAIL,
         recipient_list=[user.email],
@@ -36,13 +36,13 @@ def _send_verification_email(user, request):
         <div style="font-family:sans-serif;max-width:480px;margin:0 auto;background:#080810;color:#f0f0fa;padding:40px;border-radius:16px;border:1px solid #252538">
           <div style="text-align:center;margin-bottom:32px">
             <div style="display:inline-block;background:#c8ff00;border-radius:10px;padding:10px 20px">
-              <span style="font-family:sans-serif;font-size:18px;font-weight:800;color:#080810">HabitFlow</span>
+              <span style="font-family:sans-serif;font-size:18px;font-weight:800;color:#080810">HabitFlows</span>
             </div>
           </div>
           <h2 style="color:#c8ff00;font-size:24px;margin-bottom:12px">Verify your email</h2>
           <p style="color:#a0a0c0;line-height:1.6;margin-bottom:28px">
             Hi {user.display_name},<br/><br/>
-            Click the button below to verify your email and activate your HabitFlow account.
+            Click the button below to verify your email and activate your HabitFlows account.
             This link expires in <strong style="color:#f0f0fa">24 hours</strong>.
           </p>
           <a href="{link}" style="display:inline-block;background:#c8ff00;color:#080810;font-weight:700;font-size:15px;padding:14px 32px;border-radius:10px;text-decoration:none;letter-spacing:.3px">
@@ -217,7 +217,7 @@ def api_forgot(request):
     user.save()
 
     send_mail(
-        subject='🔑 Your HabitFlow temporary password',
+        subject='🔑 Your HabitFlows temporary password',
         message=f'Your temporary password is: {temp_pwd}\n\nLog in and change it from Profile → Security.',
         from_email=settings.DEFAULT_FROM_EMAIL,
         recipient_list=[user.email],
@@ -225,7 +225,7 @@ def api_forgot(request):
         <div style="font-family:sans-serif;max-width:480px;margin:0 auto;background:#080810;color:#f0f0fa;padding:40px;border-radius:16px;border:1px solid #252538">
           <div style="text-align:center;margin-bottom:28px">
             <div style="display:inline-block;background:#c8ff00;border-radius:10px;padding:10px 20px">
-              <span style="font-size:18px;font-weight:800;color:#080810">HabitFlow</span>
+              <span style="font-size:18px;font-weight:800;color:#080810">HabitFlows</span>
             </div>
           </div>
           <div style="text-align:center;font-size:40px;margin-bottom:16px">🔑</div>

@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>HabitFlow</title>
+<title>HabitFlows</title>
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <link rel="manifest" href="/static/habits/manifest.json">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="HabitFlow">
+<meta name="apple-mobile-web-app-title" content="HabitFlows">
 <meta name="theme-color" content="#c8ff00">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap" rel="stylesheet">
@@ -26,17 +26,18 @@ body.hovering #cursor{width:16px;height:16px}
 body.hovering #cursor-ring{width:52px;height:52px;border-color:var(--lime)}
 #bgCanvas{position:fixed;inset:0;z-index:0;opacity:.35;pointer-events:none}
 .shell{display:flex;min-height:100vh;position:relative;z-index:1}
-.sidebar{width:var(--sidebar-w);background:rgba(17,17,32,.85);backdrop-filter:blur(30px);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:50;transition:transform .3s cubic-bezier(.4,0,.2,1)}
+.sidebar{width:var(--sidebar-w);background:rgba(17,17,32,.92);backdrop-filter:blur(30px);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:50;transition:transform .3s cubic-bezier(.4,0,.2,1)}
 .sidebar-logo{padding:28px 24px 22px;border-bottom:1px solid var(--border)}
-.logo-mark{display:flex;align-items:center;gap:10px}
+.logo-mark{display:flex;align-items:center;gap:10px;transition:opacity .15s}
+.logo-mark:hover{opacity:.8}
 .logo-icon{width:36px;height:36px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
 .logo-text{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;letter-spacing:-.5px}
 .logo-text span{color:var(--lime)}
 .sidebar-date{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);margin-top:6px;letter-spacing:.5px;text-transform:uppercase}
-.sidebar-nav{flex:1;padding:18px 12px;overflow-y:auto}
+.sidebar-nav{flex:1;padding:18px 12px;overflow-y:auto;position:relative;z-index:1;pointer-events:auto}
 .nav-section-label{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;padding:0 12px;margin-bottom:6px;margin-top:18px}
 .nav-section-label:first-child{margin-top:0}
-.nav-item{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:10px;cursor:pointer;transition:all .2s;color:var(--text2);font-size:14px;font-weight:500;border:1px solid transparent;margin-bottom:2px;position:relative;overflow:hidden;}
+.nav-item{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:10px;cursor:pointer;transition:all .2s;color:var(--text2);font-size:14px;font-weight:500;border:1px solid transparent;margin-bottom:2px;position:relative;overflow:hidden;pointer-events:auto;-webkit-tap-highlight-color:rgba(200,255,0,.1);}
 .nav-item::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(200,255,0,.05),transparent);opacity:0;transition:opacity .2s}
 .nav-item:hover{color:var(--text);background:var(--surface2)}
 .nav-item:hover::before{opacity:1}
@@ -44,7 +45,7 @@ body.hovering #cursor-ring{width:52px;height:52px;border-color:var(--lime)}
 .nav-ico{font-size:15px;width:20px;text-align:center;flex-shrink:0}
 .nav-badge{margin-left:auto;background:rgba(200,255,0,.15);color:var(--lime);font-family:'DM Mono',monospace;font-size:10px;padding:2px 8px;border-radius:99px}
 .nav-item.active .nav-badge{background:rgba(0,0,0,.2);color:var(--bg)}
-.sidebar-footer{padding:14px 12px 20px;border-top:1px solid var(--border)}
+.sidebar-footer{padding:14px 12px 20px;border-top:1px solid var(--border);position:relative;z-index:1;pointer-events:auto}
 .add-btn{width:100%;padding:13px 16px;background:var(--lime);border:none;border-radius:10px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--bg);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s;letter-spacing:.3px}
 .add-btn:hover{background:#d4ff1a;box-shadow:0 4px 20px var(--lime-glow);transform:translateY(-1px)}
 .main{margin-left:var(--sidebar-w);flex:1;min-height:100vh;padding-bottom:80px;min-width:0;overflow-x:hidden}
@@ -306,7 +307,7 @@ table.mxtbl td.hncell{text-align:left;padding-left:24px}
 .tdot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 .hamburger{display:none;position:fixed;top:16px;left:16px;z-index:200;width:40px;height:40px;border-radius:10px;background:var(--surface);border:1px solid var(--border2);align-items:center;justify-content:center;cursor:pointer;flex-direction:column;gap:5px}
 .hamburger span{width:18px;height:2px;background:var(--text);border-radius:2px;transition:all .2s}
-.sb-backdrop{display:none;position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.6)}
+.sb-backdrop{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.6);pointer-events:none}
 ::-webkit-scrollbar{width:5px;height:5px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:99px}
@@ -403,9 +404,9 @@ table.mxtbl td.hncell{text-align:left;padding-left:24px}
 /* ─── MOBILE RESPONSIVE/* ─── MOBILE RESPONSIVE ──────────────────────────────────────────── */
 @media(max-width:900px){
   /* Sidebar: slide in/out */
-  .sidebar{transform:translateX(-110%);z-index:300}
-  .sidebar.open{transform:translateX(0)}
-  .sb-backdrop.open{display:block;z-index:290}
+  .sidebar{transform:translateX(-110%);z-index:600 !important;backdrop-filter:none;-webkit-backdrop-filter:none;background:#0d0d1f;pointer-events:none}
+  .sidebar.open{transform:translateX(0);pointer-events:auto}
+  .sb-backdrop.open{display:block;z-index:490;pointer-events:auto;left:var(--sidebar-w)}
 
   /* Main area fills full width */
   .main{margin-left:0;padding-bottom:90px}
@@ -437,9 +438,13 @@ table.mxtbl td.hncell{text-align:left;padding-left:24px}
   /* Bigger tap targets throughout */
   .nav-item{
     padding:14px 14px;
-    min-height:48px;
-    -webkit-tap-highlight-color:transparent;
-    touch-action:manipulation}
+    min-height:52px;
+    -webkit-tap-highlight-color:rgba(200,255,0,.1);
+    touch-action:manipulation;
+    position:relative;
+    z-index:2;
+    pointer-events:auto;
+    cursor:pointer}
   .add-btn,.mbtn,.mbtn-p,.mbtn-s,.mbtn-danger{
     min-height:48px;
     touch-action:manipulation;
@@ -583,7 +588,7 @@ table.mxtbl td.hncell{text-align:left;padding-left:24px}
 <div id="cursor"></div>
 <div id="cursor-ring"></div>
 <canvas id="bgCanvas"></canvas>
-{% if show_verified_toast %}<div class="verified-toast" id="verifiedToast">&#10003; Email verified — welcome to HabitFlow!</div>{% endif %}
+{% if show_verified_toast %}<div class="verified-toast" id="verifiedToast">&#10003; Email verified — welcome to HabitFlows!</div>{% endif %}
 <div class="hamburger" id="hamburger" onclick="toggleSidebar()"><span></span><span></span><span></span></div>
 <nav id="bottomNav" style="display:none">
   <div class="bn-item active" onclick="mobileNav('today',this)"><span class="bn-ico">☀️</span>Today</div>
@@ -608,7 +613,7 @@ table.mxtbl td.hncell{text-align:left;padding-left:24px}
 <div class="shell">
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-logo">
-    <div class="logo-mark">
+    <a class="logo-mark" onclick="switchPage('today', document.querySelector('.nav-item'))" style="cursor:pointer;text-decoration:none;display:flex;align-items:center;gap:10px;-webkit-tap-highlight-color:transparent;touch-action:manipulation">
       <div class="logo-icon">
         <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
           <rect width="36" height="36" rx="10" fill="#c8ff00"/>
@@ -618,8 +623,8 @@ table.mxtbl td.hncell{text-align:left;padding-left:24px}
           <path d="M21 19.5 L24.5 23.5 L32 13" stroke="#080810" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </div>
-      <div><div class="logo-text">Habit<span>Flow</span></div></div>
-    </div>
+      <div><div class="logo-text">Habit<span>Flows</span></div></div>
+    </a>
     <div class="sidebar-date" id="sidebarDate"></div>
   </div>
   <nav class="sidebar-nav">
@@ -753,7 +758,7 @@ table.mxtbl td.hncell{text-align:left;padding-left:24px}
 
   <!-- GLOBAL CHAT PAGE -->
   <div class="page" id="page-globalchat">
-    <div class="pg-hd"><h1 class="pg-title">Global<em> Chat</em></h1><p class="pg-sub">Chat with all HabitFlow users in real time.</p></div>
+    <div class="pg-hd"><h1 class="pg-title">Global<em> Chat</em></h1><p class="pg-sub">Chat with all HabitFlows users in real time.</p></div>
     <div class="chat-wrap">
       <div class="chat-messages" id="globalMessages"></div>
       <div class="chat-input-bar">
@@ -983,8 +988,21 @@ function toggleSidebar(forceClose){
   const sb  = document.getElementById('sidebar');
   const bd  = document.getElementById('sbBackdrop');
   const open = sb.classList.contains('open');
-  if(forceClose || open){ sb.classList.remove('open'); bd.classList.remove('open'); }
-  else { sb.classList.add('open'); bd.classList.add('open'); }
+  if(forceClose || open){
+    sb.classList.remove('open');
+    bd.classList.remove('open');
+    bd.style.pointerEvents  = 'none';
+    sb.style.pointerEvents  = 'none';
+  } else {
+    sb.classList.add('open');
+    bd.classList.add('open');
+    bd.style.pointerEvents  = 'auto';
+    sb.style.pointerEvents  = 'auto';
+    // Force all nav items to be tappable
+    sb.querySelectorAll('.nav-item, button, a').forEach(el => {
+      el.style.pointerEvents = 'auto';
+    });
+  }
 }
 function mobileNav(page, el){
   // Update bottom nav active state
@@ -1644,7 +1662,7 @@ async function openShareCard(){
   const lv=xpData.level||{emoji:'🌱',name:'Seedling',xp:0,color:'#c8ff00'};
   document.getElementById('sharePreview').innerHTML=`
     <div style="background:linear-gradient(135deg,#080810,#0d0d18 50%,#111120);padding:28px;border-radius:14px;text-align:center">
-      <div style="font-size:9px;font-family:'DM Mono',monospace;color:#444456;letter-spacing:2px;text-transform:uppercase;margin-bottom:14px">HabitFlow</div>
+      <div style="font-size:9px;font-family:'DM Mono',monospace;color:#444456;letter-spacing:2px;text-transform:uppercase;margin-bottom:14px">HabitFlows</div>
       <div style="font-size:36px;margin-bottom:2px">🔥</div>
       <div style="font-size:56px;font-weight:800;color:#c8ff00;letter-spacing:-3px;line-height:1;font-family:'Syne',sans-serif">${bestStreak}</div>
       <div style="font-size:13px;color:#a0a0c0;margin-top:4px;margin-bottom:18px">day streak</div>
@@ -1653,7 +1671,7 @@ async function openShareCard(){
         <div><div style="font-size:20px;font-weight:800;color:#c8ff00;font-family:'Syne',sans-serif">${badgesData.length}</div><div style="font-size:8px;color:#555570;font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.5px">Badges</div></div>
         <div><div style="font-size:22px;color:${lv.color}">${lv.emoji}</div><div style="font-size:8px;color:#555570;font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.5px">${lv.name}</div></div>
       </div>
-      <div style="font-size:9px;color:#2a2a3a;font-family:'DM Mono',monospace">habitflow.app</div>
+      <div style="font-size:9px;color:#2a2a3a;font-family:'DM Mono',monospace">habitflows.app</div>
     </div>`;
 }
 
@@ -2283,7 +2301,7 @@ async function startPayment(){
       key:          order.key_id,
       amount:       order.amount,
       currency:     order.currency,
-      name:         'HabitFlow',
+      name:         'HabitFlows',
       description:  _pricingPlan==='monthly'?'Premium Monthly — ₹29':'Premium Yearly — ₹299',
       image:        '',
       order_id:     order.order_id,
