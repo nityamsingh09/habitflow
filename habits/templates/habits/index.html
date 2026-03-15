@@ -1580,7 +1580,7 @@ async function openShareCard(){
 
 // ═══ PWA SERVICE WORKER ════════════════════════════════════════════════════
 if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('/static/sw.js').catch(()=>{});
+  navigator.serviceWorker.register('/static/habits/sw.js').catch(()=>{});
 }
 
 // ═══ PATCH switchPage for new pages ════════════════════════════════════════
@@ -1605,7 +1605,9 @@ switchPage=function(page,el){
   // Poll DM unread every 15s
   async function pollDMUnread(){
     try{
-      const u=await fetch('/api/chat/inbox').then(r=>r.json());
+      const resp = await fetch('/api/chat/inbox');
+      if(!resp.ok) return;  // ignore 401/500 silently
+      const u = await resp.json();
       const total=Object.values(u).reduce((a,b)=>a+b,0);
       const badge=document.getElementById('dmUnreadBadge');
       if(badge){badge.textContent=total;badge.style.display=total?'inline-block':'none';}
@@ -2050,16 +2052,26 @@ async function loadProfilePage(){
 
 async function sendForgotFromProfile(email){
   const msgEl = document.getElementById('forgotSecMsg');
+  const btn   = event.currentTarget;
+  if(btn){ btn.disabled=true; btn.textContent='Sending…'; }
   if(msgEl){ msgEl.style.color='var(--muted)'; msgEl.textContent='Sending…'; }
   try{
-    const d = await fetch('/auth/api/forgot',{
+    const resp = await fetch('/auth/api/forgot',{
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({email})
-    }).then(r=>r.json());
-    if(msgEl){ msgEl.style.color='#34d399'; msgEl.textContent='✓ Temporary password sent to '+email+'!'; }
-    showToast('📨 Check your email!','#c8ff00');
+    });
+    const d = await resp.json();
+    if(!resp.ok || d.error){
+      if(msgEl){ msgEl.style.color='#f87171'; msgEl.textContent='❌ ' + (d.error || 'Could not send email. Check your SMTP settings.'); }
+      showToast('❌ Email could not be sent','#f87171');
+    } else {
+      if(msgEl){ msgEl.style.color='#34d399'; msgEl.textContent='✓ Temporary password sent to '+email+'!'; }
+      showToast('📨 Check your email!','#c8ff00');
+    }
   }catch(e){
-    if(msgEl){ msgEl.style.color='#f87171'; msgEl.textContent='Something went wrong. Try again.'; }
+    if(msgEl){ msgEl.style.color='#f87171'; msgEl.textContent='Network error. Try again.'; }
+  }finally{
+    if(btn){ btn.disabled=false; btn.textContent='📨 Send Temporary Password to My Email'; }
   }
 }
 

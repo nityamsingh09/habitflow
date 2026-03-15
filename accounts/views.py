@@ -27,33 +27,37 @@ def _send_verification_email(user, request):
         expires_at=timezone.now() + timedelta(hours=24),
     )
     link = request.build_absolute_uri(f'/auth/verify-email/{token.token}/')
-    send_mail(
-        subject='Verify your HabitFlows email',
-        message='',
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        recipient_list=[user.email],
-        html_message=f"""
-        <div style="font-family:sans-serif;max-width:480px;margin:0 auto;background:#080810;color:#f0f0fa;padding:40px;border-radius:16px;border:1px solid #252538">
-          <div style="text-align:center;margin-bottom:32px">
-            <div style="display:inline-block;background:#c8ff00;border-radius:10px;padding:10px 20px">
-              <span style="font-family:sans-serif;font-size:18px;font-weight:800;color:#080810">HabitFlows</span>
+    try:
+        send_mail(
+            subject='Verify your HabitFlows email',
+            message=f'Verify your email: {link}',
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+            html_message=f"""
+            <div style="font-family:sans-serif;max-width:480px;margin:0 auto;background:#080810;color:#f0f0fa;padding:40px;border-radius:16px;border:1px solid #252538">
+              <div style="text-align:center;margin-bottom:32px">
+                <div style="display:inline-block;background:#c8ff00;border-radius:10px;padding:10px 20px">
+                  <span style="font-family:sans-serif;font-size:18px;font-weight:800;color:#080810">HabitFlows</span>
+                </div>
+              </div>
+              <h2 style="color:#c8ff00;font-size:24px;margin-bottom:12px">Verify your email</h2>
+              <p style="color:#a0a0c0;line-height:1.6;margin-bottom:28px">
+                Hi {user.display_name},<br/><br/>
+                Click the button below to verify your email and activate your HabitFlows account.
+                This link expires in <strong style="color:#f0f0fa">24 hours</strong>.
+              </p>
+              <a href="{link}" style="display:inline-block;background:#c8ff00;color:#080810;font-weight:700;font-size:15px;padding:14px 32px;border-radius:10px;text-decoration:none;letter-spacing:.3px">
+                ✓ Verify Email
+              </a>
+              <p style="color:#555570;font-size:12px;margin-top:28px">
+                If you didn't create this account, you can safely ignore this email.
+              </p>
             </div>
-          </div>
-          <h2 style="color:#c8ff00;font-size:24px;margin-bottom:12px">Verify your email</h2>
-          <p style="color:#a0a0c0;line-height:1.6;margin-bottom:28px">
-            Hi {user.display_name},<br/><br/>
-            Click the button below to verify your email and activate your HabitFlows account.
-            This link expires in <strong style="color:#f0f0fa">24 hours</strong>.
-          </p>
-          <a href="{link}" style="display:inline-block;background:#c8ff00;color:#080810;font-weight:700;font-size:15px;padding:14px 32px;border-radius:10px;text-decoration:none;letter-spacing:.3px">
-            ✓ Verify Email
-          </a>
-          <p style="color:#555570;font-size:12px;margin-top:28px">
-            If you didn't create this account, you can safely ignore this email.
-          </p>
-        </div>
-        """,
-    )
+            """,
+            fail_silently=True,
+        )
+    except Exception:
+        pass  # Email failure should never crash signup
 
 
 def _seed_default_habits(user):
@@ -213,37 +217,41 @@ def api_forgot(request):
     chars    = string.ascii_letters + string.digits + '!@#$'
     temp_pwd = ''.join(random.choices(chars, k=10))
 
+    # Try sending email BEFORE saving password
+    try:
+        send_mail(
+            subject='🔑 Your HabitFlows temporary password',
+            message=f'Your temporary password is: {temp_pwd}\n\nLog in and change it from Profile → Security.',
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+            html_message=f"""
+            <div style="font-family:sans-serif;max-width:480px;margin:0 auto;background:#080810;color:#f0f0fa;padding:40px;border-radius:16px;border:1px solid #252538">
+              <div style="text-align:center;margin-bottom:28px">
+                <div style="display:inline-block;background:#c8ff00;border-radius:10px;padding:10px 20px">
+                  <span style="font-size:18px;font-weight:800;color:#080810">HabitFlows</span>
+                </div>
+              </div>
+              <div style="text-align:center;font-size:40px;margin-bottom:16px">🔑</div>
+              <h2 style="color:#c8ff00;font-size:24px;margin-bottom:12px;text-align:center">Your temporary password</h2>
+              <p style="color:#a0a0c0;line-height:1.6;margin-bottom:20px">
+                Hi {user.display_name},<br/><br/>
+                Use this temporary password to log in, then go to <strong style="color:#f0f0fa">Profile → Security</strong> to set a permanent one.
+              </p>
+              <div style="background:#0d0d18;border:2px solid #c8ff00;border-radius:12px;padding:20px;text-align:center;margin-bottom:24px">
+                <div style="font-family:monospace;font-size:26px;font-weight:700;color:#c8ff00;letter-spacing:4px">{temp_pwd}</div>
+              </div>
+              <p style="color:#555570;font-size:12px;text-align:center">
+                If you didn't request this, log in immediately and change your password.
+              </p>
+            </div>
+            """,
+        )
+    except Exception as e:
+        return JsonResponse({'error': 'Could not send email. Please check your email address or try again later.'}, status=500)
+
+    # Email sent — now save the new password
     user.set_password(temp_pwd)
     user.save()
-
-    send_mail(
-        subject='🔑 Your HabitFlows temporary password',
-        message=f'Your temporary password is: {temp_pwd}\n\nLog in and change it from Profile → Security.',
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        recipient_list=[user.email],
-        html_message=f"""
-        <div style="font-family:sans-serif;max-width:480px;margin:0 auto;background:#080810;color:#f0f0fa;padding:40px;border-radius:16px;border:1px solid #252538">
-          <div style="text-align:center;margin-bottom:28px">
-            <div style="display:inline-block;background:#c8ff00;border-radius:10px;padding:10px 20px">
-              <span style="font-size:18px;font-weight:800;color:#080810">HabitFlows</span>
-            </div>
-          </div>
-          <div style="text-align:center;font-size:40px;margin-bottom:16px">🔑</div>
-          <h2 style="color:#c8ff00;font-size:24px;margin-bottom:12px;text-align:center">Your temporary password</h2>
-          <p style="color:#a0a0c0;line-height:1.6;margin-bottom:20px">
-            Hi {user.display_name},<br/><br/>
-            Use this temporary password to log in, then go to <strong style="color:#f0f0fa">Profile → Security</strong> to set a permanent one.
-          </p>
-          <div style="background:#0d0d18;border:2px solid #c8ff00;border-radius:12px;padding:20px;text-align:center;margin-bottom:24px">
-            <div style="font-family:monospace;font-size:26px;font-weight:700;color:#c8ff00;letter-spacing:4px">{temp_pwd}</div>
-          </div>
-          <p style="color:#555570;font-size:12px;text-align:center">
-            If you didn't request this, log in immediately and change your password.
-          </p>
-        </div>
-        """,
-        fail_silently=True,
-    )
     return JsonResponse({'ok': True})
 
 
