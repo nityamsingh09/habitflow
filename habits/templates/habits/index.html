@@ -2052,9 +2052,9 @@ async function loadProfilePage(){
 
 async function sendForgotFromProfile(email){
   const msgEl = document.getElementById('forgotSecMsg');
-  const btn   = event.currentTarget;
+  const btn   = event?.currentTarget;
   if(btn){ btn.disabled=true; btn.textContent='Sending…'; }
-  if(msgEl){ msgEl.style.color='var(--muted)'; msgEl.textContent='Sending…'; }
+  if(msgEl){ msgEl.style.color='var(--muted)'; msgEl.textContent='Sending email…'; }
   try{
     const resp = await fetch('/auth/api/forgot',{
       method:'POST', headers:{'Content-Type':'application/json'},
@@ -2062,14 +2062,15 @@ async function sendForgotFromProfile(email){
     });
     const d = await resp.json();
     if(!resp.ok || d.error){
-      if(msgEl){ msgEl.style.color='#f87171'; msgEl.textContent='❌ ' + (d.error || 'Could not send email. Check your SMTP settings.'); }
-      showToast('❌ Email could not be sent','#f87171');
+      const errMsg = d.error || 'Could not send email.';
+      if(msgEl){ msgEl.style.color='#f87171'; msgEl.textContent='❌ ' + errMsg; }
+      showToast('❌ ' + errMsg, '#f87171');
     } else {
-      if(msgEl){ msgEl.style.color='#34d399'; msgEl.textContent='✓ Temporary password sent to '+email+'!'; }
-      showToast('📨 Check your email!','#c8ff00');
+      if(msgEl){ msgEl.style.color='#34d399'; msgEl.textContent='✓ Temporary password sent to ' + email + '! Check your inbox (and spam folder).'; }
+      showToast('📨 Check your inbox!','#c8ff00');
     }
   }catch(e){
-    if(msgEl){ msgEl.style.color='#f87171'; msgEl.textContent='Network error. Try again.'; }
+    if(msgEl){ msgEl.style.color='#f87171'; msgEl.textContent='Network error: ' + e.message; }
   }finally{
     if(btn){ btn.disabled=false; btn.textContent='📨 Send Temporary Password to My Email'; }
   }

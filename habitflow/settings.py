@@ -91,6 +91,8 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 STATICFILES_DIRS = []
 
+# ── Email (Resend HTTP API) ───────────────────────────────────────────────────
+# Uses Resend HTTP API directly via urllib — no extra packages needed
 # ── Email (Gmail SMTP) ────────────────────────────────────────────────────────
 EMAIL_BACKEND       = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST          = 'smtp.gmail.com'

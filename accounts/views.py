@@ -20,24 +20,22 @@ from .models import User, EmailVerificationToken, PasswordResetToken
 # ── Helpers ────────────────────────────────────────────────────────────────
 
 def _send_verification_email(user, request):
-    """Create / replace token and send verification email."""
     EmailVerificationToken.objects.filter(user=user).delete()
     token = EmailVerificationToken.objects.create(
-        user=user,
-        expires_at=timezone.now() + timedelta(hours=24),
+        user=user, expires_at=timezone.now() + timedelta(hours=24),
     )
     link = request.build_absolute_uri(f'/auth/verify-email/{token.token}/')
     try:
         send_mail(
             subject='Verify your HabitFlows email',
-            message=f'Verify your email: {link}',
+            message=f'Verify your HabitFlows account: {link}',
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[user.email],
             html_message=f"""
             <div style="font-family:sans-serif;max-width:480px;margin:0 auto;background:#080810;color:#f0f0fa;padding:40px;border-radius:16px;border:1px solid #252538">
               <div style="text-align:center;margin-bottom:32px">
                 <div style="display:inline-block;background:#c8ff00;border-radius:10px;padding:10px 20px">
-                  <span style="font-family:sans-serif;font-size:18px;font-weight:800;color:#080810">HabitFlows</span>
+                  <span style="font-size:18px;font-weight:800;color:#080810">HabitFlows</span>
                 </div>
               </div>
               <h2 style="color:#c8ff00;font-size:24px;margin-bottom:12px">Verify your email</h2>
@@ -47,7 +45,7 @@ def _send_verification_email(user, request):
                 This link expires in <strong style="color:#f0f0fa">24 hours</strong>.
               </p>
               <a href="{link}" style="display:inline-block;background:#c8ff00;color:#080810;font-weight:700;font-size:15px;padding:14px 32px;border-radius:10px;text-decoration:none;letter-spacing:.3px">
-                ✓ Verify Email
+                &#10003; Verify Email
               </a>
               <p style="color:#555570;font-size:12px;margin-top:28px">
                 If you didn't create this account, you can safely ignore this email.
@@ -57,70 +55,58 @@ def _send_verification_email(user, request):
             fail_silently=True,
         )
     except Exception:
-        pass  # Email failure should never crash signup
+        pass
 
 
 def _seed_default_habits(user):
     """Give every new user a fresh copy of the 10 default habits."""
     from habits.models import Habit
-    DEFAULT_HABITS = [
-        {"id": "meditation", "name": "Meditation",              "icon": "🧘", "category": "Mindfulness", "color": "#a78bfa"},
-        {"id": "gym",        "name": "Gym / Workout",           "icon": "💪", "category": "Fitness",     "color": "#34d399"},
-        {"id": "journal",    "name": "Daily Journal",           "icon": "📓", "category": "Reflection",  "color": "#fbbf24"},
-        {"id": "dsa",        "name": "DSA Practice",            "icon": "🧮", "category": "Revision",    "color": "#f87171"},
-        {"id": "ds",         "name": "Data Structures",         "icon": "🗂️","category": "Revision",    "color": "#60a5fa"},
-        {"id": "class",      "name": "Class Notes",             "icon": "📚", "category": "Revision",    "color": "#fb923c"},
-        {"id": "reading",    "name": "Reading",                 "icon": "📖", "category": "Learning",    "color": "#e879f9"},
-        {"id": "water",      "name": "Drink Water (8 glasses)", "icon": "💧", "category": "Health",      "color": "#38bdf8"},
-        {"id": "sleep",      "name": "Sleep 8hrs",              "icon": "😴", "category": "Health",      "color": "#818cf8"},
-        {"id": "no_social",  "name": "No Social Media",         "icon": "🚫", "category": "Mindfulness", "color": "#fb7185"},
+    defaults = [
+        {'name': 'Morning Run',        'icon': '🏃', 'category': 'Fitness',      'color': '#f97316'},
+        {'name': 'Read 30 Minutes',    'icon': '📚', 'category': 'Learning',     'color': '#c8ff00'},
+        {'name': 'Meditate',           'icon': '🧘', 'category': 'Mindfulness',  'color': '#a78bfa'},
+        {'name': 'Drink Water',        'icon': '💧', 'category': 'Health',       'color': '#60a5fa'},
+        {'name': 'Journaling',         'icon': '📓', 'category': 'Reflection',   'color': '#fbbf24'},
     ]
-    uid_str = str(user.id).replace('-', '')[:8]
-    for h in DEFAULT_HABITS:
+    for d in defaults:
+        hid = f"default_{str(user.id).replace('-','')[:8]}_{d['name'].lower().replace(' ','_')}"
         Habit.objects.get_or_create(
-            habit_id=f"{h['id']}_{uid_str}",
-            defaults={**{k: v for k, v in h.items() if k != 'id'},
-                      'user': user, 'is_default': True}
+            habit_id=hid, user=user,
+            defaults={**d, 'is_default': True},
         )
 
 
-# ── Pages ──────────────────────────────────────────────────────────────────
+# ── Auth pages ─────────────────────────────────────────────────────────────
 
 def login_page(request):
-    if request.user.is_authenticated:
-        return redirect('/')
-    return render(request, 'accounts/auth.html', {'mode': 'login'})
-
+    error = request.GET.get('error', '')
+    return render(request, 'accounts/auth.html', {'mode': 'login', 'error': error})
 
 def signup_page(request):
-    if request.user.is_authenticated:
-        return redirect('/')
     return render(request, 'accounts/auth.html', {'mode': 'signup'})
-
 
 def forgot_page(request):
     return render(request, 'accounts/auth.html', {'mode': 'forgot'})
 
-
 def reset_page(request, token):
     try:
-        t = PasswordResetToken.objects.get(token=token)
-        if not t.is_valid():
+        rt = PasswordResetToken.objects.get(token=token)
+        if rt.used or rt.expires_at < timezone.now():
             return render(request, 'accounts/auth.html', {'mode': 'reset_expired'})
     except PasswordResetToken.DoesNotExist:
         return render(request, 'accounts/auth.html', {'mode': 'reset_expired'})
     return render(request, 'accounts/auth.html', {'mode': 'reset', 'reset_token': str(token)})
 
 
-# ── API: Signup ─────────────────────────────────────────────────────────────
+# ── API ────────────────────────────────────────────────────────────────────
 
 @csrf_exempt
 @require_http_methods(["POST"])
 def api_signup(request):
-    body = json.loads(request.body)
+    body     = json.loads(request.body)
     email    = body.get('email', '').strip().lower()
     password = body.get('password', '')
-    name     = body.get('full_name', '').strip()
+    name     = body.get('name', '').strip() or email.split('@')[0]
 
     if not email or not password:
         return JsonResponse({'error': 'Email and password required.'}, status=400)
@@ -132,11 +118,9 @@ def api_signup(request):
     user = User.objects.create_user(email=email, password=password, full_name=name)
     _seed_default_habits(user)
     _send_verification_email(user, request)
+    auth_login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+    return JsonResponse({'ok': True, 'redirect': '/'})
 
-    return JsonResponse({'ok': True, 'message': 'Account created! Check your email to verify.'})
-
-
-# ── API: Login ──────────────────────────────────────────────────────────────
 
 @csrf_exempt
 @require_http_methods(["POST"])
@@ -144,60 +128,41 @@ def api_login(request):
     body     = json.loads(request.body)
     email    = body.get('email', '').strip().lower()
     password = body.get('password', '')
-
     try:
         user = User.objects.get(email=email)
     except User.DoesNotExist:
         return JsonResponse({'error': 'Invalid email or password.'}, status=401)
-
     if not user.check_password(password):
         return JsonResponse({'error': 'Invalid email or password.'}, status=401)
-
-    if not user.is_verified:
-        return JsonResponse({'error': 'Please verify your email before logging in.', 'needs_verify': True}, status=403)
-
     auth_login(request, user, backend='django.contrib.auth.backends.ModelBackend')
     return JsonResponse({'ok': True, 'redirect': '/'})
 
-
-# ── API: Logout ─────────────────────────────────────────────────────────────
 
 def api_logout(request):
     auth_logout(request)
     return redirect('/auth/login/')
 
 
-# ── Email Verification ──────────────────────────────────────────────────────
-
 def verify_email(request, token):
     try:
-        vt = EmailVerificationToken.objects.select_related('user').get(token=token)
+        vt = EmailVerificationToken.objects.get(token=token)
+        if vt.expires_at < timezone.now():
+            return redirect('/auth/login/?error=expired')
+        vt.user.is_verified = True
+        vt.user.save(update_fields=['is_verified'])
+        vt.delete()
+        return redirect('/?verified=1')
     except EmailVerificationToken.DoesNotExist:
-        return render(request, 'accounts/auth.html', {'mode': 'verify_invalid'})
-
-    if not vt.is_valid():
-        return render(request, 'accounts/auth.html', {'mode': 'verify_expired', 'email': vt.user.email})
-
-    vt.user.is_verified = True
-    vt.user.save()
-    vt.delete()
-    auth_login(request, vt.user, backend='django.contrib.auth.backends.ModelBackend')
-    return redirect('/?verified=1')
+        return redirect('/auth/login/?error=invalid')
 
 
 @csrf_exempt
 @require_http_methods(["POST"])
 def resend_verification(request):
-    body  = json.loads(request.body)
-    email = body.get('email', '').strip().lower()
-    try:
-        user = User.objects.get(email=email)
-        if user.is_verified:
-            return JsonResponse({'error': 'Already verified.'}, status=400)
-        _send_verification_email(user, request)
-        return JsonResponse({'ok': True})
-    except User.DoesNotExist:
-        return JsonResponse({'error': 'Email not found.'}, status=404)
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Login required'}, status=401)
+    _send_verification_email(request.user, request)
+    return JsonResponse({'ok': True})
 
 
 # ── Forgot / Reset Password ─────────────────────────────────────────────────
@@ -212,16 +177,14 @@ def api_forgot(request):
     except User.DoesNotExist:
         return JsonResponse({'ok': True})  # don't reveal existence
 
-    # Generate a random 10-char temp password
     import random, string
     chars    = string.ascii_letters + string.digits + '!@#$'
     temp_pwd = ''.join(random.choices(chars, k=10))
 
-    # Try sending email BEFORE saving password
     try:
         send_mail(
-            subject='🔑 Your HabitFlows temporary password',
-            message=f'Your temporary password is: {temp_pwd}\n\nLog in and change it from Profile → Security.',
+            subject='Your HabitFlows temporary password',
+            message=f'Your temporary password is: {temp_pwd}\n\nLog in and go to Profile > Security to set a permanent password.',
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[user.email],
             html_message=f"""
@@ -231,25 +194,24 @@ def api_forgot(request):
                   <span style="font-size:18px;font-weight:800;color:#080810">HabitFlows</span>
                 </div>
               </div>
-              <div style="text-align:center;font-size:40px;margin-bottom:16px">🔑</div>
+              <div style="text-align:center;font-size:40px;margin-bottom:16px">&#128273;</div>
               <h2 style="color:#c8ff00;font-size:24px;margin-bottom:12px;text-align:center">Your temporary password</h2>
               <p style="color:#a0a0c0;line-height:1.6;margin-bottom:20px">
                 Hi {user.display_name},<br/><br/>
-                Use this temporary password to log in, then go to <strong style="color:#f0f0fa">Profile → Security</strong> to set a permanent one.
+                Use this to log in, then set a permanent password from <strong style="color:#f0f0fa">Profile &rarr; Security</strong>.
               </p>
               <div style="background:#0d0d18;border:2px solid #c8ff00;border-radius:12px;padding:20px;text-align:center;margin-bottom:24px">
-                <div style="font-family:monospace;font-size:26px;font-weight:700;color:#c8ff00;letter-spacing:4px">{temp_pwd}</div>
+                <div style="font-family:monospace;font-size:28px;font-weight:700;color:#c8ff00;letter-spacing:6px">{temp_pwd}</div>
               </div>
               <p style="color:#555570;font-size:12px;text-align:center">
-                If you didn't request this, log in immediately and change your password.
+                If you didn't request this, log in and change your password immediately.
               </p>
             </div>
             """,
         )
     except Exception as e:
-        return JsonResponse({'error': 'Could not send email. Please check your email address or try again later.'}, status=500)
+        return JsonResponse({'error': f'Could not send email. ({e})'}, status=500)
 
-    # Email sent — now save the new password
     user.set_password(temp_pwd)
     user.save()
     return JsonResponse({'ok': True})
@@ -261,134 +223,42 @@ def api_reset_password(request):
     body     = json.loads(request.body)
     token    = body.get('token', '')
     password = body.get('password', '')
-
     if len(password) < 8:
         return JsonResponse({'error': 'Password must be at least 8 characters.'}, status=400)
-
     try:
-        rt = PasswordResetToken.objects.select_related('user').get(token=token)
+        rt = PasswordResetToken.objects.get(token=token, used=False)
+        if rt.expires_at < timezone.now():
+            return JsonResponse({'error': 'Reset link has expired.'}, status=400)
     except PasswordResetToken.DoesNotExist:
-        return JsonResponse({'error': 'Invalid or expired link.'}, status=400)
-
-    if not rt.is_valid():
-        return JsonResponse({'error': 'This link has expired. Please request a new one.'}, status=400)
-
+        return JsonResponse({'error': 'Invalid or expired reset link.'}, status=400)
     rt.user.set_password(password)
     rt.user.save()
     rt.used = True
     rt.save()
-    return JsonResponse({'ok': True, 'message': 'Password updated! You can now log in.'})
+    return JsonResponse({'ok': True})
 
 
-# ── Google OAuth ────────────────────────────────────────────────────────────
-
-def google_login(request):
-    """Redirect user to Google's OAuth consent screen."""
-    params = urllib.parse.urlencode({
-        'client_id':     settings.GOOGLE_CLIENT_ID,
-        'redirect_uri':  request.build_absolute_uri('/auth/google/callback/'),
-        'response_type': 'code',
-        'scope':         'openid email profile',
-        'access_type':   'online',
-        'prompt':        'select_account',
-    })
-    return HttpResponseRedirect(f'https://accounts.google.com/o/oauth2/v2/auth?{params}')
-
-
-def google_callback(request):
-    """Handle Google's redirect back with auth code."""
-    code  = request.GET.get('code')
-    error = request.GET.get('error')
-
-    if error or not code:
-        return redirect('/auth/login/?error=google_cancelled')
-
-    # Exchange code for tokens
-    token_url = 'https://oauth2.googleapis.com/token'
-    token_data = urllib.parse.urlencode({
-        'code':          code,
-        'client_id':     settings.GOOGLE_CLIENT_ID,
-        'client_secret': settings.GOOGLE_CLIENT_SECRET,
-        'redirect_uri':  request.build_absolute_uri('/auth/google/callback/'),
-        'grant_type':    'authorization_code',
-    }).encode()
-
-    try:
-        req  = urllib.request.Request(token_url, data=token_data, method='POST')
-        resp = urllib.request.urlopen(req, timeout=10)
-        token_json = json.loads(resp.read())
-    except Exception:
-        return redirect('/auth/login/?error=google_failed')
-
-    # Get user info
-    access_token = token_json.get('access_token')
-    try:
-        info_req  = urllib.request.Request(
-            'https://www.googleapis.com/oauth2/v3/userinfo',
-            headers={'Authorization': f'Bearer {access_token}'}
-        )
-        info_resp = urllib.request.urlopen(info_req, timeout=10)
-        info      = json.loads(info_resp.read())
-    except Exception:
-        return redirect('/auth/login/?error=google_failed')
-
-    google_id  = info.get('sub')
-    email      = info.get('email', '').lower()
-    name       = info.get('name', '')
-    avatar     = info.get('picture', '')
-
-    # Find or create user
-    user = None
-    try:
-        user = User.objects.get(google_id=google_id)
-    except User.DoesNotExist:
-        try:
-            user = User.objects.get(email=email)
-            user.google_id   = google_id
-            user.avatar_url  = avatar
-            user.is_verified = True
-            if not user.full_name:
-                user.full_name = name
-            user.save()
-        except User.DoesNotExist:
-            user = User.objects.create_user(
-                email=email, full_name=name,
-                avatar_url=avatar, google_id=google_id,
-                is_verified=True,
-            )
-            _seed_default_habits(user)
-
-    auth_login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-    return redirect('/')
-
-
-# ── ADD / CHANGE PASSWORD (for profile settings) ───────────────────────────
+# ── Add / Change Password ───────────────────────────────────────────────────
 
 @csrf_exempt
 def api_add_password(request):
-    """Google OAuth users who have no password can set one here."""
     if not request.user.is_authenticated:
         return JsonResponse({'error': 'Login required'}, status=401)
     if request.method != 'POST':
         return JsonResponse({'error': 'POST only'}, status=405)
-
     body = json.loads(request.body)
     new_password = body.get('new_password', '')
     if len(new_password) < 8:
         return JsonResponse({'error': 'Password must be at least 8 characters'}, status=400)
-
     user = request.user
     if user.has_usable_password():
-        # Already has password — require current password to change
         current = body.get('current_password', '')
         if not current:
             return JsonResponse({'error': 'Current password required to change it'}, status=400)
         if not user.check_password(current):
             return JsonResponse({'error': 'Current password is incorrect'}, status=400)
-
     user.set_password(new_password)
     user.save()
-    # Re-login so session stays valid after password change
     from django.contrib.auth import update_session_auth_hash
     update_session_auth_hash(request, user)
     return JsonResponse({'ok': True, 'message': 'Password set successfully'})
@@ -396,12 +266,92 @@ def api_add_password(request):
 
 @csrf_exempt
 def api_account_info(request):
-    """Return account info — specifically whether the user has a password set."""
     if not request.user.is_authenticated:
         return JsonResponse({'error': 'Login required'}, status=401)
     return JsonResponse({
-        'has_password':  request.user.has_usable_password(),
-        'has_google':    bool(request.user.google_id),
-        'email':         request.user.email,
-        'display_name':  request.user.display_name,
+        'has_password': request.user.has_usable_password(),
+        'has_google':   bool(request.user.google_id),
+        'email':        request.user.email,
+        'display_name': request.user.display_name,
     })
+
+
+# ── Google OAuth ───────────────────────────────────────────────────────────
+
+def google_login(request):
+    params = {
+        'client_id':     settings.GOOGLE_CLIENT_ID,
+        'redirect_uri':  request.build_absolute_uri('/auth/google/callback/'),
+        'response_type': 'code',
+        'scope':         'openid email profile',
+        'access_type':   'offline',
+        'prompt':        'select_account',
+    }
+    return HttpResponseRedirect(
+        f'https://accounts.google.com/o/oauth2/v2/auth?{urllib.parse.urlencode(params)}'
+    )
+
+
+def google_callback(request):
+    code  = request.GET.get('code')
+    error = request.GET.get('error')
+    if error or not code:
+        return redirect('/auth/login/?error=google_cancelled')
+
+    # Exchange code for tokens
+    token_data = urllib.parse.urlencode({
+        'code':          code,
+        'client_id':     settings.GOOGLE_CLIENT_ID,
+        'client_secret': settings.GOOGLE_CLIENT_SECRET,
+        'redirect_uri':  request.build_absolute_uri('/auth/google/callback/'),
+        'grant_type':    'authorization_code',
+    }).encode()
+    try:
+        req  = urllib.request.Request('https://oauth2.googleapis.com/token',
+                                      data=token_data, method='POST')
+        resp = urllib.request.urlopen(req, timeout=10)
+        tokens = json.loads(resp.read().decode())
+    except Exception:
+        return redirect('/auth/login/?error=google_failed')
+
+    # Fetch user info
+    try:
+        req2     = urllib.request.Request(
+            'https://www.googleapis.com/oauth2/v3/userinfo',
+            headers={'Authorization': f"Bearer {tokens['access_token']}"}
+        )
+        resp2    = urllib.request.urlopen(req2, timeout=10)
+        ginfo    = json.loads(resp2.read().decode())
+    except Exception:
+        return redirect('/auth/login/?error=google_failed')
+
+    gemail  = ginfo.get('email', '').lower()
+    gname   = ginfo.get('name', gemail.split('@')[0])
+    gsub    = ginfo.get('sub', '')
+    gavatar = ginfo.get('picture', '')
+
+    # Find or create user
+    user = None
+    try:
+        user = User.objects.get(google_id=gsub)
+    except User.DoesNotExist:
+        pass
+    if not user:
+        try:
+            user = User.objects.get(email=gemail)
+            if not user.google_id:
+                user.google_id  = gsub
+                user.avatar_url = gavatar or user.avatar_url
+                user.save(update_fields=['google_id', 'avatar_url'])
+        except User.DoesNotExist:
+            user = User.objects.create(
+                email=gemail, full_name=gname,
+                google_id=gsub, avatar_url=gavatar,
+                is_verified=True,
+            )
+            user.set_unusable_password()
+            user.save()
+            _seed_default_habits(user)
+
+    auth_login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+    return redirect('/')

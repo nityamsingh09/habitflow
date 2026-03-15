@@ -397,9 +397,13 @@ async function submitForgot(){
   try{
     const r=await fetch('/auth/api/forgot',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});
     const d=await r.json();
-    if(d.ok){document.getElementById('forgotForm').style.display='none';document.getElementById('forgotSuccess').style.display='block';}
-    else{showAlert('forgotError',d.error);}
-  }catch{showAlert('forgotError','Something went wrong.');}
+    if(d.ok){
+      document.getElementById('forgotForm').style.display='none';
+      document.getElementById('forgotSuccess').style.display='block';
+    } else {
+      showAlert('forgotError', d.error || 'Could not send email. Please try again.');
+    }
+  }catch(e){showAlert('forgotError','Network error. Please try again.');}
   setLoading('forgotBtn',false);
 }
 
