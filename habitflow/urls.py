@@ -13,5 +13,4 @@ urlpatterns = [
     path('auth/', include('accounts.urls')),
     path('', include('gamification.urls')),
     path('', include('challenges.urls')),
-    path('', include('payments.urls')),
 ]

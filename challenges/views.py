@@ -36,15 +36,6 @@ def create_challenge(request):
     today = date.today()
     duration = int(body.get('duration_days', 7))
     end = today + timedelta(days=duration - 1)
-    # Free users cannot create challenges
-    try:
-        from payments.models import get_or_create_subscription
-        sub = get_or_create_subscription(request.user)
-        if not sub.is_premium:
-            return JsonResponse({'error': 'free_plan', 'message': 'Upgrade to Premium to create challenges.'}, status=403)
-    except Exception:
-        pass
-
     ch = Challenge.objects.create(
         creator=request.user,
         title=body.get('title', ''),
@@ -70,14 +61,6 @@ def join_challenge(request, challenge_id):
         return JsonResponse({'error': 'Not found'}, status=404)
     if date.today() > ch.end_date:
         return JsonResponse({'error': 'Challenge has ended'}, status=400)
-    # Free users cannot join challenges
-    try:
-        from payments.models import get_or_create_subscription
-        sub = get_or_create_subscription(request.user)
-        if not sub.is_premium:
-            return JsonResponse({'error': 'free_plan', 'message': 'Upgrade to Premium to join challenges.'}, status=403)
-    except Exception:
-        pass
     p, created = ChallengeParticipant.objects.get_or_create(challenge=ch, user=request.user)
     # Mark any pending invite as accepted
     ChallengeInvite.objects.filter(challenge=ch, invited_user=request.user, status='pending').update(

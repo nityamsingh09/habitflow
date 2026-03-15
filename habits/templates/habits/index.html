@@ -4,7 +4,9 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>HabitFlows</title>
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<link rel="icon" type="image/svg+xml" href="/static/habits/favicon.svg">
+<link rel="icon" type="image/x-icon" href="/static/habits/favicon.svg">
+<link rel="apple-touch-icon" href="/static/habits/favicon.svg">
 <link rel="manifest" href="/static/habits/manifest.json">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -375,31 +377,13 @@ table.mxtbl td.hncell{text-align:left;padding-left:24px}
 
 
 /* ── Pricing ─────────────────────────────────────────── */
-.plans-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:720px;margin:0 auto}
-.plan-card{background:var(--surface);border:1.5px solid var(--border);border-radius:20px;padding:28px 24px;position:relative;transition:border-color .2s}
-.plan-card.premium{border-color:var(--lime);background:linear-gradient(160deg,var(--surface),rgba(200,255,0,.04))}
-.plan-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--lime);color:var(--bg);font-family:'Syne',sans-serif;font-size:10px;font-weight:800;padding:3px 14px;border-radius:99px;white-space:nowrap;letter-spacing:.5px}
-.plan-name{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;margin-bottom:4px}
-.plan-price{font-family:'Syne',sans-serif;font-size:36px;font-weight:800;color:var(--lime);letter-spacing:-2px;margin:12px 0 4px}
 .plan-price span{font-size:14px;color:var(--muted);font-weight:400;letter-spacing:0}
-.plan-features{list-style:none;padding:0;margin:16px 0 20px;display:flex;flex-direction:column;gap:8px}
 .plan-features li{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text2)}
 .plan-features li::before{content:'✓';color:var(--lime);font-weight:700;flex-shrink:0}
 .plan-features li.no::before{content:'✗';color:var(--muted)}
 .plan-features li.no{color:var(--muted)}
-.plan-btn{width:100%;padding:13px;border-radius:11px;border:none;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
-.plan-btn.free{background:var(--surface2);border:1px solid var(--border2);color:var(--text2)}
-.plan-btn.paid{background:var(--lime);color:var(--bg)}
-.plan-btn.paid:hover{background:var(--lime2);transform:translateY(-1px)}
-.plan-toggle{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:28px}
-.ptog-btn{padding:7px 20px;border-radius:99px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;touch-action:manipulation;font-family:'DM Sans',sans-serif}
-.ptog-btn.active{background:var(--lime);border-color:var(--lime);color:var(--bg)}
-.ptog-save{background:rgba(200,255,0,.12);border:1px solid rgba(200,255,0,.2);color:var(--lime);font-size:10px;font-family:'DM Mono',monospace;padding:2px 8px;border-radius:99px}
 /* Free limit banner */
-.free-limit-banner{background:rgba(200,255,0,.06);border:1px solid rgba(200,255,0,.15);border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:12px;margin-bottom:14px}
-.flb-text{flex:1;font-size:12px;color:var(--text2)}
-.flb-btn{padding:6px 14px;background:var(--lime);border:none;border-radius:8px;color:var(--bg);font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;touch-action:manipulation;font-family:'DM Sans',sans-serif}
-@media(max-width:640px){.plans-grid{grid-template-columns:1fr}}
+@media(max-width:640px){}
 
 /* ─── MOBILE RESPONSIVE/* ─── MOBILE RESPONSIVE ──────────────────────────────────────────── */
 @media(max-width:900px){
@@ -692,7 +676,6 @@ table.mxtbl td.hncell{text-align:left;padding-left:24px}
         <div class="prog-top"><span id="progTxt">0 of 0 habits complete</span><span class="prog-pct" id="progPct">0%</span></div>
         <div class="prog-bar"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
       </div>
-      <div id="freeLimitBanner"></div>
       <div class="cat-filter" id="catFilter"></div>
       <div class="habits-grid" id="habitsGrid"></div>
     </div>
@@ -740,12 +723,6 @@ table.mxtbl td.hncell{text-align:left;padding-left:24px}
   </div>
 
 
-
-  <!-- UPGRADE PAGE -->
-  <div class="page" id="page-upgrade">
-    <div class="pg-hd"><h1 class="pg-title">Choose Your<em> Plan</em></h1><p class="pg-sub">Upgrade to unlock unlimited habits, advanced analytics, and more.</p></div>
-    <div id="upgradeContent"></div>
-  </div>
 
   <!-- PROFILE & SECURITY PAGE -->
   <div class="page" id="page-profile">
@@ -903,7 +880,6 @@ const COLORS=['#c8ff00','#34d399','#60a5fa','#f87171','#fb923c','#e879f9','#38bd
 const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
 const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 let allHabits=[],allLogs={},allStats={},todayDone=[],allBadges=[],badgeDefs=[];
-let _sub = {plan:'free', is_premium:false, habit_limit:5}; // populated after loadAll
 let selColor=COLORS[0],editingId=null,pendingDeleteId=null;
 let matrixY,matrixM,activeWeek=0,lineChartI=null;
 const radCharts={};
@@ -953,20 +929,16 @@ function toggleTargetInput(){
 }
 
 async function loadAll(){
-  const [habits,logs,stats,today,badges,defs,meData] = await Promise.all([
+  [allHabits,allLogs,allStats,todayDone,allBadges,badgeDefs]=await Promise.all([
     fetch('/api/habits').then(r=>r.json()),
     fetch('/api/logs').then(r=>r.json()),
     fetch('/api/stats').then(r=>r.json()),
     fetch('/api/today').then(r=>r.json()),
     fetch('/api/badges').then(r=>r.json()),
     fetch('/api/badge-definitions').then(r=>r.json()),
-    fetch('/api/me').then(r=>r.json()),
   ]);
-  allHabits=habits; allLogs=logs; allStats=stats; todayDone=today; allBadges=badges; badgeDefs=defs;
-  if(meData?.subscription) _sub = meData.subscription;
   renderToday();
   updateBadgeNav();
-  updateUpgradeNav();
 }
 
 function updateBadgeNav(){
@@ -1025,30 +997,9 @@ function renderToday(){
 
   const filtered=selCat==='All'?allHabits:allHabits.filter(h=>h.category===selCat);
 
-  // Free plan: only show first 3 habits on Today page
-  const DISPLAY_LIMIT = _sub.is_premium ? filtered.length : 3;
-  const visible  = filtered.slice(0, DISPLAY_LIMIT);
-  const hidden   = filtered.slice(DISPLAY_LIMIT);
-
   const grid=document.getElementById('habitsGrid');grid.innerHTML='';
 
-  // Free limit banner (shown when user has habits beyond limit)
-  const bannerWrap = document.getElementById('freeLimitBanner');
-  if(bannerWrap){
-    if(!_sub.is_premium && allHabits.length > 0){
-      const used = allHabits.length;
-      const limit = _sub.habit_limit || 5;
-      if(used >= limit){
-        bannerWrap.innerHTML=`<div class="free-limit-banner"><span style="font-size:18px">⭐</span><div class="flb-text"><strong>Free plan:</strong> ${used}/${limit} habits used. Upgrade to add unlimited habits.</div><button class="flb-btn" onclick="switchPage('upgrade',document.querySelector('.nav-item:last-child'))">Upgrade</button></div>`;
-      } else {
-        bannerWrap.innerHTML=`<div class="free-limit-banner"><span style="font-size:18px">🆓</span><div class="flb-text"><strong>Free plan:</strong> ${used}/${limit} habits. <a href="#" onclick="switchPage('upgrade',null);return false" style="color:var(--lime)">Upgrade</a> for unlimited.</div></div>`;
-      }
-    } else if(_sub.is_premium){
-      bannerWrap.innerHTML='';
-    }
-  }
-
-  visible.forEach((h,i)=>{
+  filtered.forEach((h,i)=>{
     const done=todayDone.includes(h.id);
     const stat=allStats[h.id]||{};
     const weekPct=stat.total?Math.min(100,Math.round(stat.total/30*100)):0;
@@ -1070,18 +1021,6 @@ function renderToday(){
     card.onclick=()=>toggleHabit(h.id,card);
     grid.appendChild(card);
   });
-
-  // Show locked habits for free users
-  if(hidden.length > 0 && !_sub.is_premium){
-    const lockDiv = document.createElement('div');
-    lockDiv.style.cssText='grid-column:1/-1;background:var(--surface);border:1.5px dashed var(--border2);border-radius:16px;padding:22px;text-align:center';
-    lockDiv.innerHTML=`
-      <div style="font-size:28px;margin-bottom:8px">🔒</div>
-      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:15px;margin-bottom:6px">${hidden.length} more habit${hidden.length>1?'s':''} hidden</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:14px">Free plan shows 3 habits on Today. Upgrade to see all ${allHabits.length}.</div>
-      <button onclick="switchPage('upgrade',null)" style="padding:9px 22px;background:var(--lime);border:none;border-radius:10px;color:var(--bg);font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;touch-action:manipulation">⭐ Upgrade to Premium</button>`;
-    grid.appendChild(lockDiv);
-  }
 
   updateHero();
 }
@@ -1145,17 +1084,11 @@ function changeMonth(d){matrixM+=d;if(matrixM>11){matrixM=0;matrixY++;}if(matrix
 function ds(y,m,d){return`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;}
 function getDIM(y,m){return new Date(y,m+1,0).getDate();}
 
-// Free plan: only first 5 habits visible across all views (matrix, heatmap, manage)
-function visibleHabits(){
-  if(_sub.is_premium) return allHabits;
-  return allHabits.slice(0, _sub.habit_limit || 5);
-}
-
 function renderMatrix(){
   document.getElementById('mnLabel').textContent=`${MONTHS[matrixM]} ${matrixY}`;
   const days=getDIM(matrixY,matrixM),todayDs=nowDate.toISOString().split('T')[0];
   const mLogs={};for(let d=1;d<=days;d++){const s=ds(matrixY,matrixM,d);mLogs[s]=allLogs[s]||[];}
-  const habits=visibleHabits();
+  const habits=allHabits;
   const dpd={},dpH={};habits.forEach(h=>dpH[h.id]=0);
   for(let d=1;d<=days;d++){const s=ds(matrixY,matrixM,d);dpd[s]=(mLogs[s]||[]).length;(mLogs[s]||[]).forEach(id=>{if(dpH[id]!==undefined)dpH[id]++;});}
   const past=Array.from({length:days},(_,i)=>i+1).filter(d=>ds(matrixY,matrixM,d)<=todayDs);
@@ -1187,7 +1120,7 @@ function renderLineChart(days,dpd,todayDs){
 
 function renderRadials(dpH,pd){
   const g=document.getElementById('radialGrid');Object.values(radCharts).forEach(c=>c.destroy());Object.keys(radCharts).forEach(k=>delete radCharts[k]);g.innerHTML='';
-  visibleHabits().slice(0,8).forEach(h=>{
+  allHabits.slice(0,8).forEach(h=>{
     const pct=pd?Math.round((dpH[h.id]||0)/pd*100):0,cid='rc_'+h.id.replace(/\W/g,'_');
     const el=document.createElement('div');el.className='radial-item';
     el.innerHTML=`<div class="radial-wrap"><canvas id="${cid}" width="70" height="70"></canvas><div class="radial-center" style="color:${h.color}">${pct}%</div></div><div class="radial-name">${h.icon} ${h.name.split(' ').slice(0,2).join(' ')}</div>`;
@@ -1207,7 +1140,7 @@ function renderMxTableOnly(){const days=getDIM(matrixY,matrixM),mL={};for(let d=
 
 function renderMxTable(days,mLogs,todayDs){
   const vd=getVdays(days),t=document.getElementById('mxtbl');t.innerHTML='';
-  const habits=visibleHabits();
+  const habits=allHabits;
   const thead=document.createElement('thead');
   let hr='<tr><th class="hcol">Habit</th>';
   vd.forEach(d=>{const s=ds(matrixY,matrixM,d),dow=new Date(s).getDay(),isT=s===todayDs;hr+=`<th class="${isT?'today-th':''}"><div style="font-size:9px;color:var(--muted);font-family:'DM Mono',monospace">${DAYS[dow]}</div><div style="font-size:13px;font-weight:800;color:${isT?'var(--lime)':'var(--text)'};font-family:'Syne',sans-serif">${d}</div></th>`;});
@@ -1248,7 +1181,7 @@ async function toggleCell(hid,dateStr,btn){
 function renderHeatmap(){
   const hf=document.getElementById('hfilter');hf.innerHTML='';
   const mkP=(lbl,id,color)=>{const b=document.createElement('button');b.className='hpill'+(selHid===id?' active':'');if(selHid===id){b.style.background=color||'#c8ff00';b.style.color='#000';}b.textContent=lbl;b.onclick=()=>{selHid=id;renderHeatmap();};hf.appendChild(b);};
-  const habits=visibleHabits();
+  const habits=allHabits;
   mkP('All Habits',null,'#c8ff00');habits.forEach(h=>mkP(h.icon+' '+h.name,h.id,h.color));
   const cards=document.getElementById('hcards');cards.innerHTML='';
   (selHid?habits.filter(h=>h.id===selHid):habits).forEach(h=>cards.appendChild(buildHCard(h)));
@@ -1325,9 +1258,7 @@ function renderBadges(){
 /* ── MANAGE ─────────────────────────────────────────────────────────── */
 function renderManage(){
   const list=document.getElementById('manageList');list.innerHTML='';
-  const habits = visibleHabits();
-  const locked = _sub.is_premium ? [] : allHabits.slice(_sub.habit_limit||5);
-  habits.forEach(h=>{
+  allHabits.forEach(h=>{
     const item=document.createElement('div');item.className='manage-item';
     const tp=allStats[h.id]&&allStats[h.id].target_progress;
     let targetPill='';
@@ -1338,13 +1269,6 @@ function renderManage(){
     item.innerHTML=`<div class="mitem-ico" style="background:${h.color}18">${h.icon}</div><div class="mitem-info"><div class="mitem-name">${h.name}</div><div class="mitem-cat">${h.category} · <span style="color:${h.color};font-family:'DM Mono',monospace;font-size:10px">${h.color}</span></div>${targetPill}</div><div class="mitem-dot" style="background:${h.color}"></div><div class="mitem-actions"><button class="bedit" onclick="openEditModal('${h.id}')">✏️ Edit</button><button class="bdel" onclick="openConfirmDelete('${h.id}','${h.name.replace(/'/g,"\\'")}')">🗑️ Delete</button></div>`;
     list.appendChild(item);
   });
-  // Show locked habits for free users
-  if(locked.length>0){
-    const div=document.createElement('div');
-    div.style.cssText='background:var(--surface2);border:1.5px dashed var(--border2);border-radius:14px;padding:16px 18px;margin-top:10px;display:flex;align-items:center;gap:12px';
-    div.innerHTML=`<span style="font-size:22px">🔒</span><div style="flex:1"><div style="font-size:13px;font-weight:600">${locked.length} habit${locked.length>1?'s':''} locked on Free plan</div><div style="font-size:11px;color:var(--muted);margin-top:2px">${locked.map(h=>h.icon+' '+h.name).join(', ')}</div></div><button onclick="switchPage('upgrade',null)" style="padding:7px 16px;background:var(--lime);border:none;border-radius:9px;color:var(--bg);font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;touch-action:manipulation">⭐ Upgrade</button>`;
-    list.appendChild(div);
-  }
 }
 
 /* ── MODALS ─────────────────────────────────────────────────────────── */
@@ -1398,16 +1322,7 @@ async function saveHabit(){
     closeOverlay('habitOverlay');await loadAll();if(document.getElementById('page-manage').classList.contains('active'))renderManage();
     showToast('✅ Habit updated!','#c8ff00');
   } else {
-    const resp = await fetch('/api/habits',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,icon,category,color:selColor,target_days:targetDays,is_public:isPublic})});
-    if(resp.status === 403){
-      const err = await resp.json();
-      if(err.error === 'free_limit'){
-        closeOverlay('habitOverlay');
-        showToast('⭐ Upgrade to add more habits!','#fbbf24');
-        setTimeout(()=>switchPage('upgrade', document.getElementById('upgradeNavItem')), 400);
-        return;
-      }
-    }
+    await fetch('/api/habits',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,icon,category,color:selColor,target_days:targetDays,is_public:isPublic})});
     closeOverlay('habitOverlay');await loadAll();if(document.getElementById('page-manage').classList.contains('active'))renderManage();
     showToast('🎉 Habit added!','#c8ff00');
   }
@@ -1583,23 +1498,11 @@ function openCreateChallenge(){document.getElementById('challengeOverlay').class
 async function saveChallenge(){
   const body={title:document.getElementById('chTitle').value.trim(),habit_name:document.getElementById('chHabit').value.trim(),habit_icon:document.getElementById('chIcon').value.trim()||'🎯',description:document.getElementById('chDesc').value.trim(),duration_days:parseInt(document.getElementById('chDuration').value)};
   if(!body.title||!body.habit_name){showToast('Fill in title and habit name','#f87171');return;}
-  const resp = await fetch('/api/challenges/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-  if(resp.status===403){
-    const err=await resp.json();
-    closeOverlay('challengeOverlay');
-    showToast('⭐ Premium required to create challenges','#fbbf24');
-    setTimeout(()=>switchPage('upgrade',document.getElementById('upgradeNavItem')),400);
-    return;
-  }
+  await fetch('/api/challenges/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
   closeOverlay('challengeOverlay');showToast('⚔️ Challenge created!','#c8ff00');loadChallenges();
 }
 async function joinChallenge(id){
-  const resp = await fetch('/api/challenges/'+id+'/join',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
-  if(resp.status===403){
-    showToast('⭐ Premium required to join challenges','#fbbf24');
-    setTimeout(()=>switchPage('upgrade',document.getElementById('upgradeNavItem')),400);
-    return;
-  }
+  await fetch('/api/challenges/'+id+'/join',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
   showToast('Joined!','#c8ff00');loadChallenges();
 }
 async function logChallenge(id){
@@ -1719,7 +1622,6 @@ switchPage = function(page, el){
   if(page==='profile')    loadProfilePage();
   if(page==='globalchat') initGlobalChat();
   if(page==='dmchat')     initDMChat();
-  if(page==='upgrade')    loadUpgradePage();
 };
 
 // ═══ GLOBAL CHAT ════════════════════════════════════════════════════════════
@@ -2178,218 +2080,6 @@ async function savePassword(requiresCurrent){
     showToast('🔒 Password updated!','#c8ff00');
     setTimeout(()=>loadProfilePage(), 1200);
   }catch(e){ msgEl.style.color='#f87171'; msgEl.textContent='Something went wrong'; }
-}
-
-// ═══ SUBSCRIPTION & PRICING ════════════════════════════════════════════════
-let _pricingPlan = 'monthly'; // toggle state
-
-function updateUpgradeNav(){
-  const navItem = document.getElementById('upgradeNavItem');
-  if(!navItem) return;
-  if(_sub.is_premium){
-    navItem.style.display = 'none'; // hide upgrade nav when premium
-  } else {
-    navItem.style.display = 'flex';
-  }
-}
-
-async function loadUpgradePage(){
-  const el = document.getElementById('upgradeContent');
-  if(!el) return;
-
-  // Refresh subscription state
-  try{
-    const d = await fetch('/api/subscription').then(r=>r.json());
-    _sub = d;
-  }catch(e){}
-
-  if(_sub.is_premium){
-    const planLabel = _sub.plan==='yearly'?'Yearly':'Monthly';
-    el.innerHTML=`
-      <div style="max-width:480px;margin:0 auto;text-align:center;padding:20px">
-        <div style="font-size:48px;margin-bottom:12px">🌟</div>
-        <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;margin-bottom:8px">You're on Premium ${planLabel}!</div>
-        <div style="color:var(--text2);font-size:13px;margin-bottom:20px">
-          ${_sub.days_left!=null?`Expires in <strong>${_sub.days_left} days</strong>`:'Active'}
-        </div>
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:20px;text-align:left">
-          <div style="font-weight:700;margin-bottom:10px">Your Premium benefits:</div>
-          ${['✅ Unlimited habits','✅ Advanced analytics','✅ Full streak history','✅ Habit challenges & invites','✅ Priority support'].map(f=>`<div style="padding:6px 0;font-size:13px;border-bottom:1px solid var(--border)">${f}</div>`).join('')}
-        </div>
-        <button onclick="cancelSub()" style="padding:10px 24px;background:transparent;border:1px solid rgba(248,113,113,.3);border-radius:10px;color:#f87171;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif">Cancel Subscription</button>
-      </div>`;
-    return;
-  }
-
-  el.innerHTML=`
-    <div class="plan-toggle">
-      <button class="ptog-btn ${_pricingPlan==='monthly'?'active':''}" onclick="setPricingPlan('monthly')">Monthly</button>
-      <button class="ptog-btn ${_pricingPlan==='yearly'?'active':''}" onclick="setPricingPlan('yearly')">Yearly</button>
-      <span class="ptog-save">Save 14%</span>
-    </div>
-    <div class="plans-grid">
-
-      <!-- FREE CARD -->
-      <div class="plan-card">
-        <div class="plan-name">🆓 Free</div>
-        <div class="plan-price">₹0<span> / forever</span></div>
-        <ul class="plan-features">
-          <li>Track up to 5 habits</li>
-          <li>Basic statistics</li>
-          <li>Daily quests</li>
-          <li>Global & friends chat</li>
-          <li class="no">Advanced analytics</li>
-          <li class="no">Unlimited habits</li>
-          <li class="no">Full streak history</li>
-        </ul>
-        <button class="plan-btn free" disabled>Current Plan</button>
-      </div>
-
-      <!-- PREMIUM CARD -->
-      <div class="plan-card premium">
-        <div class="plan-badge">⭐ MOST POPULAR</div>
-        <div class="plan-name">💎 Premium</div>
-        <div class="plan-price" id="planPriceDisplay">
-          ${_pricingPlan==='monthly'?'₹29<span> / month</span>':'₹299<span> / year</span>'}
-        </div>
-        <ul class="plan-features">
-          <li>Unlimited habits</li>
-          <li>Advanced analytics & insights</li>
-          <li>Full streak history & heatmap</li>
-          <li>Habit challenges & invites</li>
-          <li>Mood tracking & correlations</li>
-          <li>Priority support</li>
-          <li>All future features</li>
-        </ul>
-        <button class="plan-btn paid" id="payBtn" onclick="startPayment()">
-          Upgrade — ${_pricingPlan==='monthly'?'₹29/mo':'₹299/yr'}
-        </button>
-      </div>
-    </div>
-    <div style="text-align:center;margin-top:16px;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted)">
-      Secure payment via Razorpay · Cancel anytime · Instant activation
-    </div>
-  `;
-}
-
-function setPricingPlan(plan){
-  _pricingPlan = plan;
-  // Update toggle buttons
-  document.querySelectorAll('.ptog-btn').forEach(b=>{
-    b.classList.toggle('active', b.textContent.toLowerCase()===plan);
-  });
-  // Update price display
-  const priceEl = document.getElementById('planPriceDisplay');
-  if(priceEl) priceEl.innerHTML = plan==='monthly'?'₹29<span> / month</span>':'₹299<span> / year</span>';
-  const payBtn = document.getElementById('payBtn');
-  if(payBtn) payBtn.textContent = `Upgrade — ${plan==='monthly'?'₹29/mo':'₹299/yr'}`;
-}
-
-async function startPayment(){
-  const btn = document.getElementById('payBtn');
-  if(btn){ btn.disabled=true; btn.textContent='Creating order…'; }
-
-  try{
-    const order = await fetch('/api/subscription/order',{
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({plan: _pricingPlan})
-    }).then(r=>r.json());
-
-    if(order.error){ showToast('❌ '+order.error,'#f87171'); if(btn){btn.disabled=false;btn.textContent=`Upgrade — ${_pricingPlan==='monthly'?'₹29/mo':'₹299/yr'}`;} return; }
-
-    const options = {
-      key:          order.key_id,
-      amount:       order.amount,
-      currency:     order.currency,
-      name:         'HabitFlows',
-      description:  _pricingPlan==='monthly'?'Premium Monthly — ₹29':'Premium Yearly — ₹299',
-      image:        '',
-      order_id:     order.order_id,
-      prefill: {
-        name:    order.user_name,
-        email:   order.user_email,
-        contact: '',           // leave blank — user fills in
-        method:  'upi',        // pre-select UPI tab
-      },
-      config: {
-        display: {
-          blocks: {
-            utib: {             // UPI block
-              name:       'Pay via UPI',
-              instruments: [
-                { method: 'upi', flows: ['qr','collect','intent'] },
-              ],
-            },
-            other: {            // Cards / Netbanking / Wallets
-              name:       'Other Payment Methods',
-              instruments: [
-                { method: 'card' },
-                { method: 'netbanking' },
-                { method: 'wallet' },
-              ],
-            },
-          },
-          sequence: ['block.utib', 'block.other'],  // UPI first
-          preferences: {
-            show_default_blocks: false,   // hide default, use our blocks
-          },
-        },
-      },
-      theme:  { color: '#c8ff00', hide_topbar: false },
-      modal: {
-        backdropclose: false,
-        escape:        true,
-        animation:     true,
-        ondismiss: function(){
-          if(btn){ btn.disabled=false; btn.textContent=`Upgrade — ${_pricingPlan==='monthly'?'₹29/mo':'₹299/yr'}`; }
-        },
-      },
-      handler: async function(response){
-        // Payment successful — verify on backend
-        const verify = await fetch('/api/subscription/verify',{
-          method:'POST', headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({
-            razorpay_payment_id: response.razorpay_payment_id,
-            razorpay_order_id:   response.razorpay_order_id,
-            razorpay_signature:  response.razorpay_signature,
-            plan:                _pricingPlan,
-          })
-        }).then(r=>r.json());
-
-        if(verify.ok){
-          _sub = verify.subscription;
-          showToast('🎉 Welcome to Premium!','#c8ff00');
-          updateUpgradeNav();
-          loadUpgradePage();
-          await loadAll();
-        } else {
-          showToast('❌ Payment verification failed','#f87171');
-        }
-      },
-    };
-
-    if(typeof Razorpay !== 'undefined'){
-      const rzp = new Razorpay(options);
-      rzp.open();
-    } else {
-      // Razorpay script not loaded (dev/offline) — simulate success
-      showToast('⚠️ Razorpay not loaded (test mode)','#fbbf24');
-      if(btn){ btn.disabled=false; btn.textContent=`Upgrade — ${_pricingPlan==='monthly'?'₹29/mo':'₹299/yr'}`; }
-    }
-  }catch(e){
-    showToast('Something went wrong','#f87171');
-    if(btn){ btn.disabled=false; btn.textContent=`Upgrade — ${_pricingPlan==='monthly'?'₹29/mo':'₹299/yr'}`; }
-  }
-}
-
-async function cancelSub(){
-  if(!confirm('Cancel your Premium subscription? You will stay on Free plan.')) return;
-  await fetch('/api/subscription/cancel',{method:'POST'});
-  _sub = {plan:'free',is_premium:false,habit_limit:5};
-  showToast('Subscription cancelled','#a0a0c0');
-  updateUpgradeNav();
-  loadUpgradePage();
-  loadAll();
 }
 
 </script>

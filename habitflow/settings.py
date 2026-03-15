@@ -22,7 +22,6 @@ INSTALLED_APPS = [
     'social',
     'gamification',
     'challenges',
-    'payments',
 ]
 
 # ── Middleware ──────────────────────────────────────────────────────────────
@@ -111,6 +110,3 @@ GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET',
 ADMIN_SITE_HEADER  = 'HabitFlows Admin'
 ADMIN_SITE_TITLE   = 'HabitFlows'
 ADMIN_INDEX_TITLE  = 'Dashboard'
-
-RAZORPAY_KEY_ID     = 'rzp_test_SR5knhi5sGaNi1'
-RAZORPAY_KEY_SECRET = 'nz0s1s4CHvRrZmGEZ4Hcvw6H'

@@ -149,22 +149,6 @@ def habits(request):
 
     body = json.loads(request.body)
 
-    # ── Subscription limit check ──────────────────────────────────────────
-    try:
-        from payments.models import get_or_create_subscription
-        sub = get_or_create_subscription(request.user)
-        if not sub.is_premium:
-            current_count = Habit.objects.filter(user=request.user).count()
-            if current_count >= sub.FREE_HABIT_LIMIT:
-                return JsonResponse({
-                    'error':      'free_limit',
-                    'message':    f'Free plan allows up to {sub.FREE_HABIT_LIMIT} habits. Upgrade to Premium for unlimited habits.',
-                    'limit':      sub.FREE_HABIT_LIMIT,
-                    'current':    current_count,
-                }, status=403)
-    except Exception:
-        pass  # payments app not set up — allow creation
-
     new_id = f"custom_{str(request.user.id).replace('-','')[:8]}_{datetime.now().timestamp()}".replace('.','_')
     target_days, target_start = None, None
     if body.get('target_days'):
@@ -330,15 +314,4 @@ def get_badge_definitions(request):
 @require_http_methods(["GET"])
 def get_me(request):
     u = request.user
-    sub_data = {'plan':'free','is_premium':False,'habit_limit':5}
-    try:
-        from payments.models import get_or_create_subscription
-        sub_data = get_or_create_subscription(u).to_dict()
-    except Exception:
-        pass
-    return JsonResponse({
-        "email":        u.email,
-        "display_name": u.display_name,
-        "avatar_url":   u.avatar_url,
-        "subscription": sub_data,
-    })
+    return JsonResponse({"email": u.email, "display_name": u.display_name, "avatar_url": u.avatar_url})
